@@ -36,7 +36,6 @@ connection.connect((err) => {
     console.log('Connected to MySQL database');
 });
 
-// Set up view engine
 app.set('view engine', 'ejs');
 //  enable static files
 app.use(express.static('public'));
@@ -45,18 +44,18 @@ app.use(express.urlencoded({
     extended: false
 }));
 
-//TO DO: Insert code for Session Middleware below 
+
 app.use(session({
     secret: 'secret',
     resave: false,
     saveUninitialized: true,
-    // Session expires after 1 week of inactivity
+
     cookie: { maxAge: 1000 * 60 * 60 * 24 * 7 } 
 }));
 
 app.use(flash());
 
-// Middleware to check if user is logged in
+
 const checkAuthenticated = (req, res, next) => {
     if (req.session.user) {
         return next();
@@ -66,7 +65,7 @@ const checkAuthenticated = (req, res, next) => {
     }
 };
 
-// Middleware to check if user is admin
+
 const checkAdmin = (req, res, next) => {
     if (req.session.user.role === 'admin') {
         return next();
@@ -76,7 +75,7 @@ const checkAdmin = (req, res, next) => {
     }
 };
 
-// Middleware for form validation
+
 const validateRegistration = (req, res, next) => {
     const { username, email, password, address, contact, role } = req.body;
 
@@ -92,7 +91,7 @@ const validateRegistration = (req, res, next) => {
     next();
 };
 
-// Define routes
+
 app.get('/',  (req, res) => {
     res.render('index', {user: req.session.user} );
 });
@@ -125,7 +124,7 @@ app.get('/login', (req, res) => {
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
 
-    // Validate email and password
+
     if (!email || !password) {
         req.flash('error', 'All fields are required.');
         return res.redirect('/login');
