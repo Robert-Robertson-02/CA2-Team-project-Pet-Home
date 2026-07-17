@@ -159,6 +159,60 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
+// Ian nathan quah yu yang 25026099 - (Let me know if you want to make changes to the code here before doing so)
+app.get('/add', checkAuthenticated, (req, res) => {
+    res.render('addpet', { user: req.session.user, errors: req.flash('error'), messages: req.flash('success') });
+});
+
+app.post('/add', checkAuthenticated, upload.single('image'), (req, res) => {
+    const { pet_name, animal_type, age, description, allergies, breed } = req.body;
+
+    if (pet_name == '') {
+        req.flash('error', 'Pet name is required.');
+        return res.redirect('/add');
+    }
+
+    if (animal_type == '') {
+        req.flash('error', 'Type of animal is required.');
+        return res.redirect('/add');
+    }
+
+    if (age == '') {
+        req.flash('error', 'Age is required.');
+        return res.redirect('/add');
+    }
+
+    if (breed == '') {
+        req.flash('error', 'Breed is required.');
+        return res.redirect('/add');
+    }
+    if (isNaN(age)) {
+    req.flash('error', 'Age must be a number.');
+    return res.redirect('/add');
+    }
+    if (age <= 0) {
+        req.flash('error', 'Age must be a positive number.');
+        return res.redirect('/add');
+    }
+
+    let image = null;
+    if (req.file) {
+        image = req.file.filename;
+    }
+
+    const sql = `INSERT INTO pets (pet_name, animal_type, age, description, allergies, breed, image, user_id) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+
+    connection.query(sql, [pet_name, animal_type, age, description, allergies, breed, image, req.session.user.id], (err, result) => {
+        if (err) {
+            throw err;
+        }
+        req.flash('success', 'Pet added successfully!');
+        res.redirect('/pets');
+    });
+});
+// My routes end here
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
