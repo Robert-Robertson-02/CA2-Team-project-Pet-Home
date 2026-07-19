@@ -418,58 +418,76 @@ app.get('/pets/recent', (req, res) => {
 
 // END OF PART C
 //part E Delete
-app.get("/deletePet/:id", (req, res) => {
+app.get('/deletePet/:id', checkAuthenticated, (req, res) => {
 
-    const id = req.params.id;
+    const petId = req.params.id;
 
     const sql = "UPDATE pets SET deleted = 1 WHERE petId = ?";
 
-    db.query(sql, [id], (err) => {
-        if (err) throw err;
+    connection.query(sql, [petId], (err, result) => {
+        if (err) {
+            throw err;
+        }
 
-        res.redirect("/");
+        req.flash('success', 'Pet moved to Recently Deleted.');
+        res.redirect('/pets');
     });
 
 });
 // Recently delete
-app.get("/recentlyDeleted", (req, res) => {
+app.get('/recentlyDeleted', checkAuthenticated, (req, res) => {
 
     const sql = "SELECT * FROM pets WHERE deleted = 1";
 
-    db.query(sql, (err, results) => {
-        if (err) throw err;
+    connection.query(sql, (err, results) => {
 
-        res.render("recentlyDeleted", {
-            pets: results
+        if (err) {
+            throw err;
+        }
+
+        res.render('recentlyDeleted', {
+            pets: results,
+            user: req.session.user
         });
+
     });
 
 });
 //restore deleted
-app.get("/restorePet/:id", (req, res) => {
+app.get('/restorePet/:id', checkAuthenticated, (req, res) => {
 
-    const id = req.params.id;
+    const petId = req.params.id;
 
     const sql = "UPDATE pets SET deleted = 0 WHERE petId = ?";
 
-    db.query(sql, [id], (err) => {
-        if (err) throw err;
+    connection.query(sql, [petId], (err, result) => {
 
-        res.redirect("/recentlyDeleted");
+        if (err) {
+            throw err;
+        }
+
+        req.flash('success', 'Pet restored successfully.');
+        res.redirect('/recentlyDeleted');
+
     });
 
 });
 //Permanently delete
-app.get("/permanentDelete/:id", (req, res) => {
+app.get('/permanentDelete/:id', checkAuthenticated, (req, res) => {
 
-    const id = req.params.id;
+    const petId = req.params.id;
 
     const sql = "DELETE FROM pets WHERE petId = ?";
 
-    db.query(sql, [id], (err) => {
-        if (err) throw err;
+    connection.query(sql, [petId], (err, result) => {
 
-        res.redirect("/recentlyDeleted");
+        if (err) {
+            throw err;
+        }
+
+        req.flash('success', 'Pet permanently deleted.');
+        res.redirect('/recentlyDeleted');
+
     });
 
 });
