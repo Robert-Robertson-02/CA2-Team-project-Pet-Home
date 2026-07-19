@@ -1,16 +1,28 @@
 <div class="col-md-4 mb-4">
-  <div class="card shadow-sm">
-    <img src="/images/<%= pet.Picture %>" class="card-img-top" alt="<%= pet.Name %>">
-    <div class="card-body">
-      <h5 class="card-title"><%= pet.Name %></h5>
-      <p class="card-text">
-        Breed: <%= pet.Breed %><br>
-        Type: <%= pet.Type %><br>
-        Age: <%= pet.Age %><br>
-        <div class="d-flex justify-content-end">
-          <a href="/pets/<%= pet.petId %>" class="btn btn-primary">View Details</a>
+    <div class="card shadow-sm">
+        <img src="/images/<%= pet.Picture %>" class="card-img-top" alt="<%= pet.Name %>">
+
+        <div class="card-body">
+            <h5 class="card-title"><%= pet.Name %></h5>
+
+            <p class="card-text">
+                Breed: <%= pet.Breed %><br>
+                Type: <%= pet.Type %><br>
+                Age: <%= pet.Age %>
+            </p>
+
+            <div class="d-flex justify-content-between">
+                <a href="/pets/<%= pet.petId %>" class="btn btn-primary">
+                    View Details
+                </a>
+
+                <% if (user) { %>
+                    <a href="/deletePet/<%= pet.petId %>" class="btn btn-danger">
+                        Delete
+                    </a>
+                <% } %>
+            </div>
+
         </div>
-      </p>
     </div>
-  </div>
 </div>
