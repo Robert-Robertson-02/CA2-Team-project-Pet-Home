@@ -213,8 +213,84 @@ app.post('/add', checkAuthenticated, upload.single('image'), (req, res) => {
 });
 // My routes end here
 
+// Weijue
+ALTER TABLE pets
+ADD deleted TINYINT(1) NOT NULL DEFAULT 0;
+// Soft delete
+app.get('/deletePet/:id', checkAuthenticated, (req, res) => {
 
+    const petId = req.params.id;
 
+    const sql = "UPDATE pets SET deleted = 1 WHERE petId = ?";
+
+    connection.query(sql, [petId], (err, result) => {
+        if (err) {
+            throw err;
+        }
+
+        req.flash('success', 'Pet moved to Recently Deleted.');
+        res.redirect('/pets');
+    });
+
+});
+// Recently delete
+app.get('/recentlyDeleted', checkAuthenticated, (req, res) => {
+
+    const sql = "SELECT * FROM pets WHERE deleted = 1";
+
+    connection.query(sql, (err, results) => {
+
+        if (err) {
+            throw err;
+        }
+
+        res.render('recentlyDeleted', {
+            pets: results,
+            user: req.session.user
+        });
+
+    });
+
+});
+// Restore delete
+app.get('/restorePet/:id', checkAuthenticated, (req, res) => {
+
+    const petId = req.params.id;
+
+    const sql = "UPDATE pets SET deleted = 0 WHERE petId = ?";
+
+    connection.query(sql, [petId], (err, result) => {
+
+        if (err) {
+            throw err;
+        }
+
+        req.flash('success', 'Pet restored successfully.');
+        res.redirect('/recentlyDeleted');
+
+    });
+
+});
+// Permanently delete
+app.get('/permanentDelete/:id', checkAuthenticated, (req, res) => {
+
+    const petId = req.params.id;
+
+    const sql = "DELETE FROM pets WHERE petId = ?";
+
+    connection.query(sql, [petId], (err, result) => {
+
+        if (err) {
+            throw err;
+        }
+
+        req.flash('success', 'Pet permanently deleted.');
+        res.redirect('/recentlyDeleted');
+
+    });
+
+});
+// Part e done
 
 //Irzan 25021343 PART F
 app.get('/filter', (req, res) => {
