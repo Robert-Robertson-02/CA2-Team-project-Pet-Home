@@ -3,6 +3,7 @@ const mysql = require('mysql2');
 const session = require('express-session');
 const flash = require('connect-flash');
 const multer = require('multer');
+const path = require('path');
 const app = express();
 
 // Set up multer for file uploads
@@ -44,7 +45,6 @@ app.use(express.urlencoded({
     extended: false
 }));
 
-
 app.use(session({
     secret: 'secret',
     resave: false,
@@ -55,7 +55,6 @@ app.use(session({
 
 app.use(flash());
 
-
 const checkAuthenticated = (req, res, next) => {
     if (req.session.user) {
         return next();
@@ -65,7 +64,6 @@ const checkAuthenticated = (req, res, next) => {
     }
 };
 
-
 const checkAdmin = (req, res, next) => {
     if (req.session.user.role === 'admin') {
         return next();
@@ -74,7 +72,6 @@ const checkAdmin = (req, res, next) => {
         res.redirect('/shopping');
     }
 };
-
 
 const validateRegistration = (req, res, next) => {
     const { username, email, password, address, contact, role } = req.body;
@@ -91,19 +88,15 @@ const validateRegistration = (req, res, next) => {
     next();
 };
 
-
 app.get('/',  (req, res) => {
     res.render('index', {user: req.session.user} );
 });
-
-
 
 app.get('/register', (req, res) => {
     res.render('register', { messages: req.flash('error'), formData: req.flash('formData')[0] });
 });
 
 app.post('/register', validateRegistration, (req, res) => {
-
     const { username, email, password, address, contact, role } = req.body;
 
     const sql = 'INSERT INTO users (username, email, password, address, contact, role) VALUES (?, ?, SHA1(?), ?, ?, ?)';
@@ -123,7 +116,6 @@ app.get('/login', (req, res) => {
 
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
-
 
     if (!email || !password) {
         req.flash('error', 'All fields are required.');
@@ -152,14 +144,13 @@ app.post('/login', (req, res) => {
     });
 });
 
-
-
 app.get('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/');
 });
 
-// Ian nathan quah yu yang 25026099 - (Let me know if you want to make changes to the code here before doing so)
+// PART B: ADDING PETS (Ian nathan quah yu yang 25026099)
+
 app.get('/add', checkAuthenticated, (req, res) => {
     res.render('addpet', { user: req.session.user, errors: req.flash('error'), messages: req.flash('success') });
 });
@@ -211,162 +202,299 @@ app.post('/add', checkAuthenticated, upload.single('image'), (req, res) => {
         res.redirect('/pets');
     });
 });
-// My routes end here
 
-// Weijue
-ALTER TABLE pets
-ADD deleted TINYINT(1) NOT NULL DEFAULT 0;
-// Soft delete
-app.get('/deletePet/:id', checkAuthenticated, (req, res) => {
+// END OF PART B
 
-    const petId = req.params.id;
+// PART C: VIEWING AND DISPLAYING INFORMATION 
 
-    const sql = "UPDATE pets SET deleted = 1 WHERE petId = ?";
+// C1: GET - Main pet listing page with search, filter, and sort functionality
+app.get('/pets', (req, res) => {
+    const { search, animal_type, sort } = req.query;
+    let sql = `
+        SELECT p.*, u.username 
+        FROM pets p
+        LEFT JOIN users u ON p.user_id = u.id
+        WHERE 1=1
+    `;
+    const params = [];
 
-    connection.query(sql, [petId], (err, result) => {
+    // Search functionality - search by pet name, breed, or animal type
+    if (search && search.trim()) {
+        sql += ` AND (p.pet_name LIKE ? OR p.breed LIKE ? OR p.animal_type LIKE ?)`;
+        const searchPattern = `%${search.trim()}%`;
+        params.push(searchPattern, searchPattern, searchPattern);
+    }
+
+    // Filter by animal type
+    if (animal_type && animal_type !== '') {
+        sql += ` AND p.animal_type = ?`;
+        params.push(animal_type);
+    }
+
+    // Sorting functionality
+    switch(sort) {
+        case 'newest':
+            sql += ` ORDER BY p.created_at DESC`;
+            break;
+        case 'oldest':
+            sql += ` ORDER BY p.created_at ASC`;
+            break;
+        case 'name_asc':
+            sql += ` ORDER BY p.pet_name ASC`;
+            break;
+        case 'name_desc':
+            sql += ` ORDER BY p.pet_name DESC`;
+            break;
+        case 'age_asc':
+            sql += ` ORDER BY p.age ASC`;
+            break;
+        case 'age_desc':
+            sql += ` ORDER BY p.age DESC`;
+            break;
+        default:
+            sql += ` ORDER BY p.created_at DESC`;
+    }
+
+    connection.query(sql, params, (err, results) => {
         if (err) {
-            throw err;
+            console.error('Error fetching pets:', err);
+            return res.render('pets', { 
+                pets: [], 
+                messages: [],
+                errors: ['Error loading pets. Please try again.'],
+                searchQuery: search || '',
+                animalTypeFilter: animal_type || '',
+                sortBy: sort || 'newest',
+                user: req.session.user
+            });
         }
 
-        req.flash('success', 'Pet moved to Recently Deleted.');
-        res.redirect('/pets');
-    });
+        // Transform image path for display
+        const pets = results.map(pet => {
+            if (pet.image) {
+                pet.image_path = '/images/' + path.basename(pet.image);
+            }
+            return pet;
+        });
 
-});
-// Recently delete
-app.get('/recentlyDeleted', checkAuthenticated, (req, res) => {
-
-    const sql = "SELECT * FROM pets WHERE deleted = 1";
-
-    connection.query(sql, (err, results) => {
-
-        if (err) {
-            throw err;
-        }
-
-        res.render('recentlyDeleted', {
-            pets: results,
+        res.render('pets', {
+            pets: pets,
+            messages: req.flash('success'),
+            errors: req.flash('error'),
+            searchQuery: search || '',
+            animalTypeFilter: animal_type || '',
+            sortBy: sort || 'newest',
             user: req.session.user
         });
-
     });
-
 });
-// Restore delete
-app.get('/restorePet/:id', checkAuthenticated, (req, res) => {
 
+// C2: GET - View individual pet details by ID
+app.get('/pets/details/:id', (req, res) => {
     const petId = req.params.id;
 
-    const sql = "UPDATE pets SET deleted = 0 WHERE petId = ?";
+    // Validate that petId is a number
+    if (isNaN(petId)) {
+        req.flash('error', 'Invalid pet ID');
+        return res.redirect('/pets');
+    }
 
-    connection.query(sql, [petId], (err, result) => {
+    const sql = `
+        SELECT p.*, u.username, u.email, u.contact, u.address, u.id as owner_id
+        FROM pets p
+        LEFT JOIN users u ON p.user_id = u.id
+        WHERE p.pet_id = ?
+    `;
 
+    connection.query(sql, [petId], (err, results) => {
         if (err) {
-            throw err;
+            console.error('Error fetching pet details:', err);
+            req.flash('error', 'Error loading pet details');
+            return res.redirect('/pets');
         }
 
-        req.flash('success', 'Pet restored successfully.');
-        res.redirect('/recentlyDeleted');
-
-    });
-
-});
-// Permanently delete
-app.get('/permanentDelete/:id', checkAuthenticated, (req, res) => {
-
-    const petId = req.params.id;
-
-    const sql = "DELETE FROM pets WHERE petId = ?";
-
-    connection.query(sql, [petId], (err, result) => {
-
-        if (err) {
-            throw err;
+        if (results.length === 0) {
+            req.flash('error', 'Pet not found');
+            return res.redirect('/pets');
         }
 
-        req.flash('success', 'Pet permanently deleted.');
-        res.redirect('/recentlyDeleted');
+        const pet = results[0];
+        if (pet.image) {
+            pet.image_path = '/images/' + path.basename(pet.image);
+        }
 
-    });
+        // Check if current user is the owner or admin (for edit/delete permissions)
+        const isOwner = req.session.user && 
+                       (req.session.user.id === pet.owner_id || 
+                        req.session.user.role === 'admin');
 
-});
-// Part e done
-
-//Irzan 25021343 PART F
-app.get('/filter', (req, res) => {
-const sqlType = "SELECT DISTINCT Type FROM pet ORDER BY Type ASC";
-const sqlBreed = "SELECT DISTINCT Breed FROM pet ORDER BY Breed ASC";
-const sqlAge   = "SELECT DISTINCT Age FROM pet ORDER BY Age ASC";
-
-  // Run queries in parallel
-  db.query(sqlType, (err, type) => {
-    if (err) throw err;
-    db.query(sqlBreed, (err, breeds) => {
-      if (err) throw err;
-      db.query(sqlAge, (err, ages) => {
-        if (err) throw err;
-        res.render('filter', {
-          breeds: breeds,
-          type: type,
-          ages: ages
+        res.render('pet-details', {
+            pet: pet,
+            isOwner: isOwner,
+            messages: req.flash('success'),
+            errors: req.flash('error'),
+            user: req.session.user
         });
-      });
     });
-  });
 });
 
+// C3: GET - View pets filtered by category/type
+app.get('/pets/category/:type', (req, res) => {
+    const type = req.params.type;
+    
+    if (!type) {
+        return res.redirect('/pets');
+    }
+
+    const sql = `
+        SELECT p.*, u.username
+        FROM pets p
+        LEFT JOIN users u ON p.user_id = u.id
+        WHERE p.animal_type = ?
+        ORDER BY p.created_at DESC
+    `;
+
+    connection.query(sql, [type], (err, results) => {
+        if (err) {
+            console.error('Error fetching pets by category:', err);
+            req.flash('error', 'Error loading pets');
+            return res.redirect('/pets');
+        }
+
+        const pets = results.map(pet => {
+            if (pet.image) {
+                pet.image_path = '/images/' + path.basename(pet.image);
+            }
+            return pet;
+        });
+
+        res.render('pets', {
+            pets: pets,
+            messages: req.flash('success'),
+            errors: req.flash('error'),
+            searchQuery: '',
+            animalTypeFilter: type,
+            sortBy: 'newest',
+            user: req.session.user
+        });
+    });
+});
+
+// C4: GET - View recently added pets (within last 7 days)
+app.get('/pets/recent', (req, res) => {
+    const sql = `
+        SELECT p.*, u.username
+        FROM pets p
+        LEFT JOIN users u ON p.user_id = u.id
+        WHERE p.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        ORDER BY p.created_at DESC
+    `;
+
+    connection.query(sql, (err, results) => {
+        if (err) {
+            console.error('Error fetching recent pets:', err);
+            req.flash('error', 'Error loading recent pets');
+            return res.redirect('/pets');
+        }
+
+        const pets = results.map(pet => {
+            if (pet.image) {
+                pet.image_path = '/images/' + path.basename(pet.image);
+            }
+            return pet;
+        });
+
+        res.render('pets', {
+            pets: pets,
+            messages: ['Showing pets added in the last 7 days'],
+            errors: [],
+            searchQuery: '',
+            animalTypeFilter: '',
+            sortBy: 'newest',
+            user: req.session.user
+        });
+    });
+});
+
+// END OF PART C
+
+// PART F: SEARCHING, FILTERING AND ORGANISING INFORMATION (Irzan 25021343)
+
+app.get('/filter', (req, res) => {
+    const sqlType = "SELECT DISTINCT Type FROM pet ORDER BY Type ASC";
+    const sqlBreed = "SELECT DISTINCT Breed FROM pet ORDER BY Breed ASC";
+    const sqlAge   = "SELECT DISTINCT Age FROM pet ORDER BY Age ASC";
+
+    // Run queries in parallel
+    connection.query(sqlType, (err, type) => {
+        if (err) throw err;
+        connection.query(sqlBreed, (err, breeds) => {
+            if (err) throw err;
+            connection.query(sqlAge, (err, ages) => {
+                if (err) throw err;
+                res.render('filter', {
+                    breeds: breeds,
+                    type: type,
+                    ages: ages,
+                    user: req.session.user
+                });
+            });
+        });
+    });
+});
 
 app.get('/filtered', (req, res) => {
-  const keyword = req.query.search;
-  const breed = req.query['breed[]'];
-  const type = req.query['type[]'];
-  const age = req.query['age[]'];
+    const keyword = req.query.search;
+    const breed = req.query['breed[]'];
+    const type = req.query['type[]'];
+    const age = req.query['age[]'];
 
-  let sql = "SELECT * FROM pet WHERE 1=1";
-  const values = [];
+    let sql = "SELECT * FROM pet WHERE 1=1";
+    const values = [];
 
-  // If keyword search is provided
-  if (keyword) {
-    sql += " AND (name LIKE ? OR description LIKE ?)";
-    values.push(`%${keyword}%`, `%${keyword}%`);
-  }
+    // If keyword search is provided
+    if (keyword) {
+        sql += " AND (name LIKE ? OR description LIKE ?)";
+        values.push(`%${keyword}%`, `%${keyword}%`);
+    }
 
-  // If filters are provided
-  if (breed) {
-    sql += " AND breed IN (?)";
-    values.push(Array.isArray(breed) ? breed : [breed]);
-  }
-  if (type) {
-    sql += " AND type IN (?)";
-    values.push(Array.isArray(type) ? type : [type]);
-  }
-  if (age) {
-    sql += " AND age IN (?)";
-    values.push(Array.isArray(age) ? age : [age]);
-  }
+    // If filters are provided
+    if (breed) {
+        sql += " AND breed IN (?)";
+        values.push(Array.isArray(breed) ? breed : [breed]);
+    }
+    if (type) {
+        sql += " AND type IN (?)";
+        values.push(Array.isArray(type) ? type : [type]);
+    }
+    if (age) {
+        sql += " AND age IN (?)";
+        values.push(Array.isArray(age) ? age : [age]);
+    }
 
-  db.query(sql, values, (err, results) => {
-    if (err) throw err;
-    res.render('filtered', { pet: results });
-  });
+    connection.query(sql, values, (err, results) => {
+        if (err) throw err;
+        res.render('filtered', { pet: results, user: req.session.user });
+    });
 });
 
 app.get('/pets/:id', (req, res) => {
-  const petId = req.params.id;
+    const petId = req.params.id;
 
-  const sql = "SELECT * FROM pet WHERE petId = ?";
-  db.query(sql, [petId], (err, results) => {
-    if (err) throw err;
+    const sql = "SELECT * FROM pet WHERE petId = ?";
+    connection.query(sql, [petId], (err, results) => {
+        if (err) throw err;
 
-    if (results.length === 0) {
-      return res.status(404).send("Pet not found");
-    }
+        if (results.length === 0) {
+            return res.status(404).send("Pet not found");
+        }
 
-    // Render a details page with the pet info
-    res.render('petDetails', { pet: results[0] });
-  });
+        // Render a details page with the pet info
+        res.render('petDetails', { pet: results[0], user: req.session.user });
+    });
 });
-//END OF PART F
+
+// END OF PART F
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
