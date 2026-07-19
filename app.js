@@ -417,7 +417,63 @@ app.get('/pets/recent', (req, res) => {
 });
 
 // END OF PART C
+//part E Delete
+app.get("/deletePet/:id", (req, res) => {
 
+    const id = req.params.id;
+
+    const sql = "UPDATE pets SET deleted = 1 WHERE petId = ?";
+
+    db.query(sql, [id], (err) => {
+        if (err) throw err;
+
+        res.redirect("/");
+    });
+
+});
+// Recently delete
+app.get("/recentlyDeleted", (req, res) => {
+
+    const sql = "SELECT * FROM pets WHERE deleted = 1";
+
+    db.query(sql, (err, results) => {
+        if (err) throw err;
+
+        res.render("recentlyDeleted", {
+            pets: results
+        });
+    });
+
+});
+//restore deleted
+app.get("/restorePet/:id", (req, res) => {
+
+    const id = req.params.id;
+
+    const sql = "UPDATE pets SET deleted = 0 WHERE petId = ?";
+
+    db.query(sql, [id], (err) => {
+        if (err) throw err;
+
+        res.redirect("/recentlyDeleted");
+    });
+
+});
+//Permanently delete
+app.get("/permanentDelete/:id", (req, res) => {
+
+    const id = req.params.id;
+
+    const sql = "DELETE FROM pets WHERE petId = ?";
+
+    db.query(sql, [id], (err) => {
+        if (err) throw err;
+
+        res.redirect("/recentlyDeleted");
+    });
+
+});
+//part E end
 // PART F: SEARCHING, FILTERING AND ORGANISING INFORMATION (Irzan 25021343)
 
 app.get('/filter', (req, res) => {
