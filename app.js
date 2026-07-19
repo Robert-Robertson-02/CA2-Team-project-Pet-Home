@@ -214,5 +214,67 @@ app.post('/add', checkAuthenticated, upload.single('image'), (req, res) => {
 // My routes end here
 
 
+
+
+//Irzan 25021343 PART F
+app.get('/filter', (req, res) => {
+const sqlType = "SELECT DISTINCT Type FROM pet ORDER BY Type ASC";
+const sqlBreed = "SELECT DISTINCT Breed FROM pet ORDER BY Breed ASC";
+const sqlAge   = "SELECT DISTINCT Age FROM pet ORDER BY Age ASC";
+
+  // Run queries in parallel
+  db.query(sqlType, (err, type) => {
+    if (err) throw err;
+    db.query(sqlBreed, (err, breeds) => {
+      if (err) throw err;
+      db.query(sqlAge, (err, ages) => {
+        if (err) throw err;
+        res.render('filter', {
+          breeds: breeds,
+          type: type,
+          ages: ages
+        });
+      });
+    });
+  });
+});
+
+
+app.get('/filtered', (req, res) => {
+  const keyword = req.query.search;
+  const breed = req.query['breed[]'];
+  const type = req.query['type[]'];
+  const age = req.query['age[]'];
+
+  let sql = "SELECT * FROM pet WHERE 1=1";
+  const values = [];
+
+  // If keyword search is provided
+  if (keyword) {
+    sql += " AND (name LIKE ? OR description LIKE ?)";
+    values.push(`%${keyword}%`, `%${keyword}%`);
+  }
+
+  // If filters are provided
+  if (breed) {
+    sql += " AND breed IN (?)";
+    values.push(Array.isArray(breed) ? breed : [breed]);
+  }
+  if (type) {
+    sql += " AND type IN (?)";
+    values.push(Array.isArray(type) ? type : [type]);
+  }
+  if (age) {
+    sql += " AND age IN (?)";
+    values.push(Array.isArray(age) ? age : [age]);
+  }
+
+  db.query(sql, values, (err, results) => {
+    if (err) throw err;
+    res.render('filtered', { pet: results });
+  });
+});
+//END OF PART F
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
