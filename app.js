@@ -274,6 +274,22 @@ app.get('/filtered', (req, res) => {
     res.render('filtered', { pet: results });
   });
 });
+
+app.get('/pets/:id', (req, res) => {
+  const petId = req.params.id;
+
+  const sql = "SELECT * FROM pet WHERE petId = ?";
+  db.query(sql, [petId], (err, results) => {
+    if (err) throw err;
+
+    if (results.length === 0) {
+      return res.status(404).send("Pet not found");
+    }
+
+    // Render a details page with the pet info
+    res.render('petDetails', { pet: results[0] });
+  });
+});
 //END OF PART F
 
 const PORT = process.env.PORT || 3000;
