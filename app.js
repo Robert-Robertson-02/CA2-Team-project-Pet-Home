@@ -219,7 +219,7 @@ app.get('/pets', (req, res) => {
         SELECT p.*, u.username 
         FROM pets p
         LEFT JOIN users u ON p.user_id = u.id
-        WHERE 1=1
+        WHERE p.deleted = 0
     `;
     const params = [];
 
@@ -308,7 +308,7 @@ app.get('/pets/details/:id', (req, res) => {
         SELECT p.*, u.username, u.email, u.contact, u.address, u.id as owner_id
         FROM pets p
         LEFT JOIN users u ON p.user_id = u.id
-        WHERE p.pet_id = ?
+        WHERE p.pet_id = ? AND p.deleted = 0
     `;
 
     connection.query(sql, [petId], (err, results) => {
@@ -355,7 +355,7 @@ app.get('/pets/category/:type', (req, res) => {
         SELECT p.*, u.username
         FROM pets p
         LEFT JOIN users u ON p.user_id = u.id
-        WHERE p.animal_type = ?
+        WHERE p.animal_type = ? AND p.deleted = 0
         ORDER BY p.created_at DESC
     `;
 
@@ -391,7 +391,7 @@ app.get('/pets/recent', (req, res) => {
         SELECT p.*, u.username
         FROM pets p
         LEFT JOIN users u ON p.user_id = u.id
-        WHERE p.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        WHERE p.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) AND p.deleted = 0
         ORDER BY p.created_at DESC
     `;
 
