@@ -89,8 +89,13 @@ const validateRegistration = (req, res, next) => {
 };
 
 app.get('/',  (req, res) => {
-    res.render('index', {user: req.session.user} );
+    res.render('index', {user: req.session.user,  messages: req.flash('success'), searchQuery: req.flash('success'), animalTypeFilter : req.flash('success'),
+        sortBy : req.flash('success'),
+        pets : req.flash('success'),
+        errors : req.flash('success')
+    } );
 });
+
 
 app.get('/register', (req, res) => {
     res.render('register', { messages: req.flash('error'), formData: req.flash('formData')[0] });
