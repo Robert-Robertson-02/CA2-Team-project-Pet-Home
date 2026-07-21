@@ -213,217 +213,44 @@ app.post('/add', checkAuthenticated, upload.single('image'), (req, res) => {
 // END OF PART B
 
 // PART C: VIEWING AND DISPLAYING INFORMATION 
-
-// C1: GET - Main pet listing page with search, filter, and sort functionality
-app.get('/pets', (req, res) => {
-    const { search, animal_type, sort } = req.query;
-    let sql = `
+// ============================================
+// Index/Home Page Route
+// ============================================
+app.get('/', (req, res) => {
+    // SQL query to get all pets with their owner's username
+    const query = `
         SELECT p.*, u.username 
         FROM pets p
-        LEFT JOIN users u ON p.user_id = u.id
-        WHERE p.deleted = 0
+        LEFT JOIN users u ON p.user_id = u.user_id
+        WHERE p.deleted_at IS NULL
+        ORDER BY p.created_at DESC
     `;
-    const params = [];
 
-    // Search functionality - search by pet name, breed, or animal type
-    if (search && search.trim()) {
-        sql += ` AND (p.pet_name LIKE ? OR p.breed LIKE ? OR p.animal_type LIKE ?)`;
-        const searchPattern = `%${search.trim()}%`;
-        params.push(searchPattern, searchPattern, searchPattern);
-    }
-
-    // Filter by animal type
-    if (animal_type && animal_type !== '') {
-        sql += ` AND p.animal_type = ?`;
-        params.push(animal_type);
-    }
-
-    // Sorting functionality
-    switch(sort) {
-        case 'newest':
-            sql += ` ORDER BY p.created_at DESC`;
-            break;
-        case 'oldest':
-            sql += ` ORDER BY p.created_at ASC`;
-            break;
-        case 'name_asc':
-            sql += ` ORDER BY p.pet_name ASC`;
-            break;
-        case 'name_desc':
-            sql += ` ORDER BY p.pet_name DESC`;
-            break;
-        case 'age_asc':
-            sql += ` ORDER BY p.age ASC`;
-            break;
-        case 'age_desc':
-            sql += ` ORDER BY p.age DESC`;
-            break;
-        default:
-            sql += ` ORDER BY p.created_at DESC`;
-    }
-
-    connection.query(sql, params, (err, results) => {
+    db.query(query, (err, results) => {
         if (err) {
             console.error('Error fetching pets:', err);
-            return res.render('pets', { 
+            // Render with empty array and error message if there's an error
+            res.render('index', { 
                 pets: [], 
-                messages: [],
-                errors: ['Error loading pets. Please try again.'],
-                searchQuery: search || '',
-                animalTypeFilter: animal_type || '',
-                sortBy: sort || 'newest',
-                user: req.session.user
+                user: req.session.user || null,
+                error: 'Unable to load pets at this time. Please try again.'
             });
+            return;
         }
 
-        // Transform image path for display
-        const pets = results.map(pet => {
-            if (pet.image) {
-                pet.image_path = '/images/' + path.basename(pet.image);
-            }
-            return pet;
-        });
+        // Get the logged-in user from session
+        const user = req.session.user || null;
 
-        res.render('pets', {
-            pets: pets,
-            messages: req.flash('success'),
-            errors: req.flash('error'),
-            searchQuery: search || '',
-            animalTypeFilter: animal_type || '',
-            sortBy: sort || 'newest',
-            user: req.session.user
+        // Render the index page with pets data
+        res.render('index', { 
+            pets: results, 
+            user: user,
+            error: null // No error
         });
     });
 });
-
-// C2: GET - View individual pet details by ID
-app.get('/pets/details/:id', (req, res) => {
-    const petId = req.params.id;
-
-    // Validate that petId is a number
-    if (isNaN(petId)) {
-        req.flash('error', 'Invalid pet ID');
-        return res.redirect('/pets');
-    }
-
-    const sql = `
-        SELECT p.*, u.username, u.email, u.contact, u.address, u.id as owner_id
-        FROM pets p
-        LEFT JOIN users u ON p.user_id = u.id
-        WHERE p.pet_id = ? AND p.deleted = 0
-    `;
-
-    connection.query(sql, [petId], (err, results) => {
-        if (err) {
-            console.error('Error fetching pet details:', err);
-            req.flash('error', 'Error loading pet details');
-            return res.redirect('/pets');
-        }
-
-        if (results.length === 0) {
-            req.flash('error', 'Pet not found');
-            return res.redirect('/pets');
-        }
-
-        const pet = results[0];
-        if (pet.image) {
-            pet.image_path = '/images/' + path.basename(pet.image);
-        }
-
-        // Check if current user is the owner or admin (for edit/delete permissions)
-        const isOwner = req.session.user && 
-                       (req.session.user.id === pet.owner_id || 
-                        req.session.user.role === 'admin');
-
-        res.render('pet-details', {
-            pet: pet,
-            isOwner: isOwner,
-            messages: req.flash('success'),
-            errors: req.flash('error'),
-            user: req.session.user
-        });
-    });
-});
-
-// C3: GET - View pets filtered by category/type
-app.get('/pets/category/:type', (req, res) => {
-    const type = req.params.type;
-    
-    if (!type) {
-        return res.redirect('/pets');
-    }
-
-    const sql = `
-        SELECT p.*, u.username
-        FROM pets p
-        LEFT JOIN users u ON p.user_id = u.id
-        WHERE p.animal_type = ? AND p.deleted = 0
-        ORDER BY p.created_at DESC
-    `;
-
-    connection.query(sql, [type], (err, results) => {
-        if (err) {
-            console.error('Error fetching pets by category:', err);
-            req.flash('error', 'Error loading pets');
-            return res.redirect('/pets');
-        }
-
-        const pets = results.map(pet => {
-            if (pet.image) {
-                pet.image_path = '/images/' + path.basename(pet.image);
-            }
-            return pet;
-        });
-
-        res.render('pets', {
-            pets: pets,
-            messages: req.flash('success'),
-            errors: req.flash('error'),
-            searchQuery: '',
-            animalTypeFilter: type,
-            sortBy: 'newest',
-            user: req.session.user
-        });
-    });
-});
-
-// C4: GET - View recently added pets (within last 7 days)
-app.get('/pets/recent', (req, res) => {
-    const sql = `
-        SELECT p.*, u.username
-        FROM pets p
-        LEFT JOIN users u ON p.user_id = u.id
-        WHERE p.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) AND p.deleted = 0
-        ORDER BY p.created_at DESC
-    `;
-
-    connection.query(sql, (err, results) => {
-        if (err) {
-            console.error('Error fetching recent pets:', err);
-            req.flash('error', 'Error loading recent pets');
-            return res.redirect('/pets');
-        }
-
-        const pets = results.map(pet => {
-            if (pet.image) {
-                pet.image_path = '/images/' + path.basename(pet.image);
-            }
-            return pet;
-        });
-
-        res.render('pets', {
-            pets: pets,
-            messages: ['Showing pets added in the last 7 days'],
-            errors: [],
-            searchQuery: '',
-            animalTypeFilter: '',
-            sortBy: 'newest',
-            user: req.session.user
-        });
-    });
-});
-
 // END OF PART C
+
 //part E Delete
 app.get('/deletePet/:id', checkAuthenticated, (req, res) => {
 
