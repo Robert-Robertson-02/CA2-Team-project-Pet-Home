@@ -1,28 +1,59 @@
-<div class="col-md-4 mb-4">
-    <div class="card shadow-sm">
-        <img src="/images/<%= pet.Picture %>" class="card-img-top" alt="<%= pet.Name %>">
+<div class="card h-100 shadow-sm">
+      <img src="images/<%= pet.image %>" alt="<%= pet.pet_name %>" class="w-100 h-100"
+           style="object-fit: cover; object-position: center;">
+
+      <div class="card-body">
 
         <div class="card-body">
-            <h5 class="card-title"><%= pet.Name %></h5>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="card-title fw-bold mb-0">
+              <%= pet.pet_name %>
+            </h5>
+            <span class="badge bg-secondary">
+              <%= pet.animal_type || 'Pet' %>
+            </span>
+          </div>
 
-            <p class="card-text">
-                Breed: <%= pet.Breed %><br>
-                Type: <%= pet.Type %><br>
-                Age: <%= pet.Age %>
+          <div class="mb-2">
+            <span class="badge bg-info me-1"> Age: <%= pet.age || 'Unknown' %></span>
+            <span class="badge bg-warning text-dark"> Breed: <%= pet.breed || 'Unknown' %></span>
+          </div>
+
+          <% if (pet.description) { %>
+            <p class="card-text text-muted" style="font-size: 0.9rem;">
+              <%= pet.description.length > 100 ? pet.description.substring(0, 100) + '...' : pet.description %>
             </p>
+          <% } else { %>
+            <p class="card-text text-muted fst-italic" style="font-size: 0.9rem;">
+              No description provided
+            </p>
+          <% } %>
 
-            <div class="d-flex justify-content-between">
-                <a href="/pets/<%= pet.petId %>" class="btn btn-primary">
-                    View Details
-                </a>
-
-                <% if (user) { %>
-                    <a href="/deletePet/<%= pet.petId %>" class="btn btn-danger">
-                        Delete
-                    </a>
-                <% } %>
-            </div>
-
+          <p class="card-text" style="font-size: 0.8rem;">
+            <small class="text-muted">
+              Added by: <%= pet.username || 'Unknown User' %>
+            </small>
+          </p>
         </div>
+
+        <!-- Action Buttons -->
+        <div class="card-footer bg-transparent border-top-0">
+          <div class="d-grid gap-2">
+            <a href="/pets/details/<%= pet.pet_id %>" class="btn btn-outline-primary btn-sm">
+              View Details
+            </a>
+            <% if (user && user.role === 'admin') { %>
+              <div class="d-flex gap-2">
+                <a href="/pets/edit/<%= pet.pet_id %>" class="btn btn-outline-warning btn-sm flex-grow-1">
+                  Edit
+                </a>
+                <a href="/pets/delete/<%= pet.pet_id %>" class="btn btn-outline-danger btn-sm flex-grow-1"
+                   onclick="return confirm('Are you sure you want to delete this pet?');">
+                  Delete
+                </a>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
     </div>
-</div>
