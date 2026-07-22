@@ -56,6 +56,29 @@ app.use(session({
 
 app.use(flash());
 
+//part C
+// Homepage - GET
+app.get('/', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT p.*, u.username 
+            FROM pets p
+            LEFT JOIN users u ON p.user_id = u.user_id
+            WHERE p.deleted = false
+            ORDER BY p.created_at DESC
+        `);
+        
+        res.render('index', { 
+            pets: result.rows,
+            user: req.session.user || null
+        });
+    } catch (error) {
+        console.error('Error fetching pets:', error);
+        res.status(500).send('Error loading pets');
+    }
+});
+// End of part C
+
 const checkAuthenticated = (req, res, next) => {
     if (req.session.user) {
         return next();
@@ -211,45 +234,6 @@ app.post('/add', checkAuthenticated, upload.single('image'), (req, res) => {
 });
 
 // END OF PART B
-
-// PART C: VIEWING AND DISPLAYING INFORMATION 
-// ============================================
-// Index/Home Page Route
-// ============================================
-app.get('/', (req, res) => {
-    // SQL query to get all pets with their owner's username
-    const query = `
-        SELECT p.*, u.username 
-        FROM pets p
-        LEFT JOIN users u ON p.user_id = u.user_id
-        WHERE p.deleted_at IS NULL
-        ORDER BY p.created_at DESC
-    `;
-
-    db.query(query, (err, results) => {
-        if (err) {
-            console.error('Error fetching pets:', err);
-            // Render with empty array and error message if there's an error
-            res.render('index', { 
-                pets: [], 
-                user: req.session.user || null,
-                error: 'Unable to load pets at this time. Please try again.'
-            });
-            return;
-        }
-
-        // Get the logged-in user from session
-        const user = req.session.user || null;
-
-        // Render the index page with pets data
-        res.render('index', { 
-            pets: results, 
-            user: user,
-            error: null // No error
-        });
-    });
-});
-// END OF PART C
 
 //part E Delete
 app.get('/deletePet/:id', checkAuthenticated, (req, res) => {
