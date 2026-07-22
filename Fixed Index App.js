@@ -315,11 +315,11 @@ app.get('/', (req, res) => {
 //part E Delete
 app.get('/deletePet/:id', checkAuthenticated, (req, res) => {
 
-    const petId = req.params.id;
+    const pet_id = req.params.id;
 
-    const sql = "UPDATE pets SET deleted = 1 WHERE petId = ?";
+    const sql = "UPDATE pets SET deleted = 1 WHERE pet_id = ?";
 
-    connection.query(sql, [petId], (err, result) => {
+    connection.query(sql, [pet_id], (err, result) => {
         if (err) {
             throw err;
         }
@@ -351,11 +351,11 @@ app.get('/recentlyDeleted', checkAuthenticated, (req, res) => {
 //restore deleted
 app.get('/restorePet/:id', checkAuthenticated, (req, res) => {
 
-    const petId = req.params.id;
+    const pe_id = req.params.id;
 
-    const sql = "UPDATE pets SET deleted = 0 WHERE petId = ?";
+    const sql = "UPDATE pets SET deleted = 0 WHERE pet_id = ?";
 
-    connection.query(sql, [petId], (err, result) => {
+    connection.query(sql, [pet_id], (err, result) => {
 
         if (err) {
             throw err;
@@ -370,11 +370,11 @@ app.get('/restorePet/:id', checkAuthenticated, (req, res) => {
 //Permanently delete
 app.get('/permanentDelete/:id', checkAuthenticated, (req, res) => {
 
-    const petId = req.params.id;
+    const pet_id = req.params.id;
 
-    const sql = "DELETE FROM pets WHERE petId = ?";
+    const sql = "DELETE FROM pets WHERE pet_id = ?";
 
-    connection.query(sql, [petId], (err, result) => {
+    connection.query(sql, [pet_id], (err, result) => {
 
         if (err) {
             throw err;
@@ -448,10 +448,10 @@ app.get('/filtered', (req, res) => {
 });
 
 app.get('/pets/details/:id', (req, res) => {
-    const petId = req.params.id;
+    const pet_id = req.params.id;
 
     const sql = "SELECT * FROM pets WHERE pet_id = ?";
-    connection.query(sql, [petId], (err, results) => {
+    connection.query(sql, [pet_id], (err, results) => {
         if (err) throw err;
 
         if (results.length === 0) {
