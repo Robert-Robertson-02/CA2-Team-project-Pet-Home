@@ -69,7 +69,7 @@ const checkAdmin = (req, res, next) => {
         return next();
     } else {
         req.flash('error', 'Access denied');
-        res.redirect('/dashboard');
+        res.redirect('/deny');
     }
 };
 
@@ -142,9 +142,9 @@ app.post('/login', (req, res) => {
             req.session.user = results[0]; 
             req.flash('success', 'Login successful!');
             if(req.session.user.role == 'user')
-                res.redirect('/dashboard');
+                res.redirect('/');
             else
-                res.redirect('/dashboard');
+                res.redirect('/');
         } else {
             // Invalid credentials
             req.flash('error', 'Invalid email or password.');
