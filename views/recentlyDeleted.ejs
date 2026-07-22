@@ -1,47 +1,204 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <title>Recently Deleted Pets</title>
 </head>
+
 <body>
 
-<h1>Recently Deleted Pets</h1>
+<!-- Navigation -->
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">Pet Home</a>
 
-<a href="/pets">Back to Pets</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapsibleNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-<% if (pets.length === 0) { %>
-    <p>No deleted pets.</p>
-<% } else { %>
+        <div class="collapse navbar-collapse" id="collapsibleNavbar">
+            <ul class="navbar-nav ms-auto">
 
-    <% pets.forEach(pet => { %>
+                <% if (user) { %>
 
-        <div class="card">
-            <img src="/images/<%= pet.image %>" width="200">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
 
-            <h3><%= pet.pet_name %></h3>
+                <li class="nav-item">
+                    <a class="nav-link" href="/addpet">Add Pet</a>
+                </li>
 
-            <p>Breed: <%= pet.breed %></p>
+                <li class="nav-item">
+                    <a class="nav-link active" href="/recentlyDeleted">Recently Deleted</a>
+                </li>
 
-            <p>Age: <%= pet.age %></p>
+                <li class="nav-item">
+                    <a class="nav-link" href="/filter">Filter</a>
+                </li>
 
-            <a href="/restorePet/<%= pet.petId %>"
-               class="btn btn-success">
-                Restore
-            </a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle"
+                       href="#"
+                       data-bs-toggle="dropdown">
+                        <%= user.username %>
+                    </a>
 
-            <a href="/permanentDelete/<%= pet.petId %>"
-               class="btn btn-danger"
-               onclick="return confirm('Are you sure you want to permanently delete this pet?')">
-                Delete Forever
-            </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="/logout">Logout</a>
+                        </li>
+                    </ul>
+                </li>
+
+                <% } %>
+
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+<div class="container mt-4">
+
+    <div class="text-center mb-4">
+        <h1 class="display-5 fw-bold">Recently Deleted Pets</h1>
+        <p class="text-muted">Restore a pet or permanently remove it.</p>
+    </div>
+
+    <div class="d-flex justify-content-center mb-4">
+        <span class="badge bg-danger p-3 fs-6">
+            <%= pets.length %> Deleted Pet<%= pets.length !== 1 ? "s" : "" %>
+        </span>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+
+        <% if (pets.length > 0) { %>
+
+            <% pets.forEach(function(pet){ %>
+
+            <div class="col">
+
+                <div class="card h-100 shadow-sm">
+
+                    <div class="bg-light text-center" style="height:200px; overflow:hidden;">
+
+                        <% if (pet.image_path) { %>
+
+                            <img src="/images/<%= pet.image_path %>"
+                                 class="w-100 h-100"
+                                 style="object-fit:cover;"
+                                 alt="<%= pet.pet_name %>">
+
+                        <% } else { %>
+
+                            <div class="d-flex justify-content-center align-items-center h-100 text-secondary">
+                                No Image
+                            </div>
+
+                        <% } %>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="d-flex justify-content-between">
+
+                            <h5 class="fw-bold">
+                                <%= pet.pet_name %>
+                            </h5>
+
+                            <span class="badge bg-secondary">
+                                <%= pet.animal_type %>
+                            </span>
+
+                        </div>
+
+                        <div class="mb-2">
+
+                            <span class="badge bg-info">
+                                Age: <%= pet.age %>
+                            </span>
+
+                            <span class="badge bg-warning text-dark">
+                                Breed: <%= pet.breed %>
+                            </span>
+
+                        </div>
+
+                        <% if (pet.description) { %>
+
+                        <p class="text-muted">
+                            <%= pet.description.length > 100 ? pet.description.substring(0,100) + "..." : pet.description %>
+                        </p>
+
+                        <% } %>
+
+                    </div>
+
+                    <div class="card-footer bg-transparent border-top-0">
+
+                        <div class="d-grid gap-2">
+
+                            <a href="/restorePet/<%= pet.pet_id %>"
+                               class="btn btn-success">
+                                Restore
+                            </a>
+
+                            <a href="/permanentDelete/<%= pet.pet_id %>"
+                               class="btn btn-danger"
+                               onclick="return confirm('Permanently delete this pet? This cannot be undone.')">
+                                Delete Forever
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <% }) %>
+
+        <% } else { %>
+
+        <div class="col-12">
+
+            <div class="text-center p-5">
+
+                <h3>No Deleted Pets</h3>
+
+                <p class="text-muted">
+                    Your recycle bin is empty.
+                </p>
+
+                <a href="/" class="btn btn-primary">
+                    Back to Home
+                </a>
+
+            </div>
 
         </div>
 
-        <hr>
+        <% } %>
 
-    <% }) %>
+    </div>
 
-<% } %>
+</div>
+
+
+<footer class="bg-dark text-white text-center py-4 mt-5">
+    <div class="container">
+        <p class="mb-1">Pet Home - Find Your Perfect Companion</p>
+        <p class="mb-0 text-muted">© 2026 Pet Home. All rights reserved.</p>
+    </div>
+</footer>
 
 </body>
 </html>
