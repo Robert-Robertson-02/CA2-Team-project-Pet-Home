@@ -16,11 +16,10 @@
     <% } else { %>
       <div class="row">
         <% pet.forEach(p => { %>
-          <%- include('partials/card', { pet: p }) %>
+          <%- include('card', { pet: p }) %>
         <% }) %>
       </div>
     <% } %>
   </div>
 </body>
 </html>
-
