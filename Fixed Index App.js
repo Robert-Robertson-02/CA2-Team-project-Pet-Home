@@ -157,7 +157,7 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-// PART B: ADDING PETS (Ian nathan quah yu yang 25026099)
+// PART B: ADDING PETS and transferring pets from pets table to adopted pets table (Ian nathan quah yu yang 25026099)
 
 app.get('/add', checkAuthenticated, (req, res) => {
     res.render('addpet', { user: req.session.user, errors: req.flash('error'), messages: req.flash('success') });
@@ -208,6 +208,48 @@ app.post('/add', checkAuthenticated, upload.single('image'), (req, res) => {
         }
         req.flash('success', 'Pet added successfully!');
         res.redirect('/'); //placeholder
+    });
+});
+
+app.post('/adopt/:id', checkAuthenticated, (req, res) => {
+    const pet_id = req.params.id;
+
+    const selectSql = "SELECT * FROM pets WHERE pet_id = ?";
+    connection.query(selectSql, [pet_id], (err, results) => {
+        if (err) {
+            throw err;
+        }
+
+        if (results.length === 0) {
+            req.flash('error', 'Pet not found.');
+            return res.redirect('/');
+        }
+
+        const pet = results[0];
+
+        const insertSql = `INSERT INTO adopted_pets 
+            (original_pet_id, pet_name, animal_type, age, description, allergies, breed, image, user_id, adopted_by) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+        connection.query(insertSql, [
+            pet.pet_id, pet.pet_name, pet.animal_type, pet.age,
+            pet.description, pet.allergies, pet.breed, pet.image,
+            pet.user_id, req.session.user.id
+        ], (err, result) => {
+            if (err) {
+                throw err;
+            }
+
+            const deleteSql = "DELETE FROM pets WHERE pet_id = ?";
+            connection.query(deleteSql, [pet_id], (err) => {
+                if (err) {
+                    throw err;
+                }
+
+                req.flash('success', 'Pet adopted successfully!');
+                res.redirect('/');
+            });
+        });
     });
 });
 
