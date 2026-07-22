@@ -33,9 +33,9 @@
                         <h5 class="fw-semibold mb-3">Breed</h5>
                         <% breeds.forEach(b=> { %>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="breed[]" value="<%= b.Breed %>">
+                                <input class="form-check-input" type="checkbox" name="breed[]" value="<%= b.breed %>">
                                 <label class="form-check-label">
-                                    <%= b.Breed %>
+                                    <%= b.breed %>
                                 </label>
                             </div>
                             <% }) %>
@@ -46,9 +46,9 @@
                         <h5 class="fw-semibold mb-3">Type</h5>
                         <% type.forEach(t=> { %>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="type[]" value="<%= t.Type %>">
+                                <input class="form-check-input" type="checkbox" name="animal_type[]" value="<%= t.animal_type %>">
                                 <label class="form-check-label">
-                                    <%= t.Type %>
+                                    <%= t.animal_type %>
                                 </label>
                             </div>
                             <% }) %>
@@ -59,9 +59,9 @@
                         <h5 class="fw-semibold mb-3">Age</h5>
                         <% ages.forEach(a=> { %>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="age[]" value="<%= a.Age %>">
+                                <input class="form-check-input" type="checkbox" name="age[]" value="<%= a.age %>">
                                 <label class="form-check-label">
-                                    <%= a.Age %>
+                                    <%= a.age %>
                                 </label>
                             </div>
                             <% }) %>
