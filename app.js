@@ -282,7 +282,7 @@ app.get('/deletePet/:id', checkAuthenticated, (req, res) => {
         }
 
         req.flash('success', 'Pet moved to Recently Deleted.');
-        res.redirect('/pets');
+        res.redirect('/');
     });
 
 });
