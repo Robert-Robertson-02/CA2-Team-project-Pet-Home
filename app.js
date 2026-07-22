@@ -96,6 +96,10 @@ app.get('/',  (req, res) => {
     } );
 });
 
+app.get('/deny', checkAuthenticated, (req, res) => {
+    res.render('deny', { user: req.session.user });
+});
+
 
 app.get('/register', (req, res) => {
     res.render('register', { messages: req.flash('error'), formData: req.flash('formData')[0] });
@@ -156,7 +160,7 @@ app.get('/logout', (req, res) => {
 
 // PART B: ADDING PETS (Ian nathan quah yu yang 25026099)
 
-app.get('/add', checkAuthenticated, (req, res) => {
+app.get('/add', checkAuthenticated,checkAdmin, (req, res) => {
     res.render('addpet', { user: req.session.user, errors: req.flash('error'), messages: req.flash('success') });
 });
 
