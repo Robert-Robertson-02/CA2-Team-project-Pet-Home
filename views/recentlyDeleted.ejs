@@ -90,12 +90,12 @@
 
                         <% if (pet.image_path) { %>
 
-                            <img src="/images/<%= pet.image_path %>"
+                            <% if (pet.image) { %>
+                            <img src="/images/<%= pet.image %>"
                                  class="w-100 h-100"
                                  style="object-fit:cover;"
                                  alt="<%= pet.pet_name %>">
-
-                        <% } else { %>
+                            <% } else { %>
 
                             <div class="d-flex justify-content-center align-items-center h-100 text-secondary">
                                 No Image
