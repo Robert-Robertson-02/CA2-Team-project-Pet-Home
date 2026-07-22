@@ -57,26 +57,60 @@ app.use(session({
 app.use(flash());
 
 //part C
-// Homepage - GET
-app.get('/', async (req, res) => {
-    try {
-        const result = await pool.query(`
+// ============================================
+// HOMEPAGE - FIXED (ONLY ONE)
+// ============================================
+app.get('/', (req, res) => {
+    // First, let's check what columns exist in the pets table
+    connection.query("DESCRIBE pets", (err, columns) => {
+        if (err) {
+            console.error('Error describing pets table:', err);
+            return res.status(500).send('Database error: ' + err.message);
+        }
+        
+        console.log('Pet table columns:', columns);
+        
+        // Now fetch pets with proper column names
+        const sql = `
             SELECT p.*, u.username 
             FROM pets p
-            LEFT JOIN users u ON p.user_id = u.user_id
-            WHERE p.deleted = false
+            LEFT JOIN users u ON p.user_id = u.id
+            WHERE p.deleted = 0 OR p.deleted IS NULL
             ORDER BY p.created_at DESC
-        `);
+        `;
         
-        res.render('index', { 
-            pets: result.rows,
-            user: req.session.user || null
+        connection.query(sql, (err, results) => {
+            if (err) {
+                console.error('Error fetching pets:', err);
+                // Try a simpler query without JOIN
+                const simpleSql = "SELECT * FROM pets WHERE deleted = 0 OR deleted IS NULL";
+                connection.query(simpleSql, (err2, simpleResults) => {
+                    if (err2) {
+                        console.error('Simple query also failed:', err2);
+                        return res.status(500).send('Error loading pets: ' + err2.message);
+                    }
+                    console.log('Found pets (simple query):', simpleResults);
+                    res.render('index', { 
+                        pets: simpleResults,
+                        user: req.session.user || null,
+                        messages: req.flash('success'),
+                        errors: req.flash('error')
+                    });
+                });
+                return;
+            }
+            
+            console.log('Found pets:', results.length);
+            res.render('index', { 
+                pets: results,
+                user: req.session.user || null,
+                messages: req.flash('success'),
+                errors: req.flash('error')
+            });
         });
-    } catch (error) {
-        console.error('Error fetching pets:', error);
-        res.status(500).send('Error loading pets');
-    }
+    });
 });
+
 // End of part C
 
 const checkAuthenticated = (req, res, next) => {
