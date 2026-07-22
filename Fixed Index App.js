@@ -448,10 +448,10 @@ app.get('/filtered', (req, res) => {
 });
 
 app.get('/pets/details/:id', (req, res) => {
-    const pet_id = req.params.id;
+    const petId = req.params.id;
 
     const sql = "SELECT * FROM pets WHERE pet_id = ?";
-    connection.query(sql, [pet_id], (err, results) => {
+    connection.query(sql, [petId], (err, results) => {
         if (err) throw err;
 
         if (results.length === 0) {
