@@ -42,6 +42,9 @@
         <p><strong>Breed:</strong> <%= pet.Breed %></p>
         <p><strong>Type:</strong> <%= pet.Type %></p>
         <p><strong>Age:</strong> <%= pet.Age %></p>
+        <form action="/adopt/<%= pet.pet_id %>" method="POST" class="d-inline">
+        <button type="submit" class="btn btn-success mt-3">Adopt</button>
+        </form>
 
         <a href="/filtered" class="btn btn-secondary mt-3">Back to Results</a>
       </div>
