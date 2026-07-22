@@ -23,7 +23,7 @@
                 <ul class="navbar-nav ms-auto">
                     <% if (user) { %>
                         <li class="nav-item">
-                            <a class="nav-link" href="/add"> Add Pet</a>
+                            <a class="nav-link" href="/addpet"> Add Pet</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/recentlyDeleted"> Recently Deleted</a>
@@ -36,7 +36,7 @@
                                 <%= user.username || 'User' %>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="/logout">🚪 Logout</a></li>
+                                <li><a class="dropdown-item" href="/logout"> Logout</a></li>
                             </ul>
                         </li>
                     <% } else { %>
@@ -76,7 +76,7 @@
                             <!-- Pet Image -->
                             <div class="bg-light text-center" style="height: 200px; overflow: hidden;">
                                 <% if (pet.image_path) { %>
-                                    <img src="<%= pet.image_path %>" alt="<%= pet.pet_name %>" class="w-100 h-100" style="object-fit: cover;">
+                                    <img src="<%= public/images %>" alt="<%= pet.pet_name %>" class="w-100 h-100" style="object-fit: cover;">
                                 <% } else { %>
                                     <div class="d-flex justify-content-center align-items-center h-100 text-secondary" style="font-size: 4rem;">
                                     </div>
