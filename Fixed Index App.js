@@ -348,9 +348,9 @@ app.get('/permanentDelete/:id', checkAuthenticated, (req, res) => {
 // PART F: SEARCHING, FILTERING AND ORGANISING INFORMATION (Irzan 25021343)
 
 app.get('/filter', (req, res) => {
-    const sqlType = "SELECT DISTINCT Type FROM pet ORDER BY Type ASC";
-    const sqlBreed = "SELECT DISTINCT Breed FROM pet ORDER BY Breed ASC";
-    const sqlAge   = "SELECT DISTINCT Age FROM pet ORDER BY Age ASC";
+    const sqlType = "SELECT DISTINCT animal_type FROM pets ORDER BY animal_type ASC";
+    const sqlBreed = "SELECT DISTINCT breed FROM pets ORDER BY breed ASC";
+    const sqlAge   = "SELECT DISTINCT age FROM pets ORDER BY age ASC";
 
     // Run queries in parallel
     connection.query(sqlType, (err, type) => {
@@ -373,15 +373,15 @@ app.get('/filter', (req, res) => {
 app.get('/filtered', (req, res) => {
     const keyword = req.query.search;
     const breed = req.query['breed[]'];
-    const type = req.query['type[]'];
+    const type = req.query['animal_type[]'];
     const age = req.query['age[]'];
 
-    let sql = "SELECT * FROM pet WHERE 1=1";
+    let sql = "SELECT * FROM pets WHERE 1=1";
     const values = [];
 
     // If keyword search is provided
     if (keyword) {
-        sql += " AND (name LIKE ? OR description LIKE ?)";
+        sql += " AND (pet_name LIKE ? OR description LIKE ?)";
         values.push(`%${keyword}%`, `%${keyword}%`);
     }
 
@@ -391,7 +391,7 @@ app.get('/filtered', (req, res) => {
         values.push(Array.isArray(breed) ? breed : [breed]);
     }
     if (type) {
-        sql += " AND type IN (?)";
+        sql += " AND animal_type IN (?)";
         values.push(Array.isArray(type) ? type : [type]);
     }
     if (age) {
@@ -405,10 +405,10 @@ app.get('/filtered', (req, res) => {
     });
 });
 
-app.get('/pets/:id', (req, res) => {
+app.get('/pets/details/:id', (req, res) => {
     const petId = req.params.id;
 
-    const sql = "SELECT * FROM pet WHERE petId = ?";
+    const sql = "SELECT * FROM pets WHERE pet_id = ?";
     connection.query(sql, [petId], (err, results) => {
         if (err) throw err;
 
