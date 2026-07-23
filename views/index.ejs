@@ -117,7 +117,7 @@
                             <!-- Pet Image -->
                             <div class="bg-light text-center" style="height: 200px; overflow: hidden; position: relative;">
                                 <% if (pet.image && pet.image !== 'null' && pet.image !== '') { %>
-                                    <img src="/images/<%= pet.image %>" 
+                                    <img src="/pet-image/<%= pet.pet_id %>" 
                                          alt="<%= pet.pet_name %>" 
                                          class="pet-image"
                                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
