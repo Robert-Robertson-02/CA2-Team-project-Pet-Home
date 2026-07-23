@@ -305,6 +305,108 @@ app.get('/', (req, res) => {
 
 // End of part C
 
+app.js Part D: 
+// Part D - Editing Existing Information (Aalysha 25044114)
+app.get('/pets/:id/edit', checkAuthenticated, (req, res) => {
+    const petId = req.params.id;
+    
+    const sql = 'SELECT * FROM pets WHERE id = ?';
+    connection.query(sql, [petId], (err, results) => {
+        if (err) {
+            throw err;
+        }
+        
+        if (results.length === 0) {
+            req.flash('error', 'Pet not found');
+            return res.redirect('/pets');
+        }
+        
+        res.render('editpet', { 
+            user: req.session.user, 
+            pet: results[0],
+            errors: req.flash('error'),
+            messages: req.flash('success')
+        });
+    });
+});
+
+app.post('/pets/:id/update', checkAuthenticated, upload.single('image'), (req, res) => {
+    const petId = req.params.id;
+    const { pet_name, animal_type, age, description, allergies, breed } = req.body;
+    
+    // Validation
+    if (!pet_name || pet_name.trim() === '') {
+        req.flash('error', 'Pet name is required.');
+        return res.redirect(`/pets/${petId}/edit`);
+    }
+    
+    if (!animal_type || animal_type.trim() === '') {
+        req.flash('error', 'Type of animal is required.');
+        return res.redirect(`/pets/${petId}/edit`);
+    }
+    
+    if (!age || age.trim() === '') {
+        req.flash('error', 'Age is required.');
+        return res.redirect(`/pets/${petId}/edit`);
+    }
+    
+    if (!breed || breed.trim() === '') {
+        req.flash('error', 'Breed is required.');
+        return res.redirect(`/pets/${petId}/edit`);
+    }
+    
+    if (isNaN(age)) {
+        req.flash('error', 'Age must be a number.');
+        return res.redirect(`/pets/${petId}/edit`);
+    }
+    
+    if (parseInt(age) <= 0) {
+        req.flash('error', 'Age must be a positive number.');
+        return res.redirect(`/pets/${petId}/edit`);
+    }
+    
+    // First, check if the pet exists and user has permission
+    const checkSql = 'SELECT * FROM pets WHERE id = ?';
+    connection.query(checkSql, [petId], (err, results) => {
+        if (err) {
+            throw err;
+        }
+        
+        if (results.length === 0) {
+            req.flash('error', 'Pet not found');
+            return res.redirect('/pets');
+        }
+        
+        // Check permission
+        if (req.session.user.role !== 'admin' && results[0].user_id !== req.session.user.id) {
+            req.flash('error', 'You do not have permission to update this pet');
+            return res.redirect('/pets');
+        }
+        
+        // Determine if we're updating the image
+        let image = results[0].image; // Keep existing image by default
+        if (req.file) {
+            image = req.file.filename; // Update with new image if provided
+        }
+        
+        // Update the pet in the database
+        const updateSql = `UPDATE pets 
+                          SET pet_name = ?, animal_type = ?, age = ?, description = ?, 
+                              allergies = ?, breed = ?, image = ? 
+                          WHERE id = ?`;
+        
+        connection.query(updateSql, [pet_name, animal_type, age, description, allergies, breed, image, petId], (err, result) => {
+            if (err) {
+                throw err;
+            }
+            
+            req.flash('success', 'Pet updated successfully!');
+            res.redirect('/pets');
+        });
+    });
+});
+//My route ends here
+
 //part E Delete
 app.get('/deletePet/:id', checkAuthenticated, (req, res) => {
 
