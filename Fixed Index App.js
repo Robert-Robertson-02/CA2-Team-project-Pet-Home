@@ -255,7 +255,7 @@ app.post('/adopt/:id', checkAuthenticated, (req, res) => {
 
 // END OF PART B
 
-//part C
+///part C
 // ============================================
 // HOMEPAGE - FIXED (ONLY ONE)
 // ============================================
@@ -263,11 +263,8 @@ app.get('/', (req, res) => {
     // First, let's check what columns exist in the pets table
     connection.query("DESCRIBE pets", (err, columns) => {
         if (err) {
-            console.error('Error describing pets table:', err);
             return res.status(500).send('Database error: ' + err.message);
         }
-        
-        console.log('Pet table columns:', columns);
         
         // Now fetch pets with proper column names
         const sql = `
@@ -280,15 +277,12 @@ app.get('/', (req, res) => {
         
         connection.query(sql, (err, results) => {
             if (err) {
-                console.error('Error fetching pets:', err);
                 // Try a simpler query without JOIN
                 const simpleSql = "SELECT * FROM pets WHERE deleted = 0";
                 connection.query(simpleSql, (err2, simpleResults) => {
                     if (err2) {
-                        console.error('Simple query also failed:', err2);
                         return res.status(500).send('Error loading pets: ' + err2.message);
                     }
-                    console.log('Found pets (simple query):', simpleResults);
                     res.render('index', { 
                         pets: simpleResults,
                         user: req.session.user || null,
@@ -299,7 +293,6 @@ app.get('/', (req, res) => {
                 return;
             }
             
-            console.log('Found pets:', results.length);
             res.render('index', { 
                 pets: results,
                 user: req.session.user || null,
@@ -311,6 +304,7 @@ app.get('/', (req, res) => {
 });
 
 // End of part C
+
 
 //part E Delete
 app.get('/deletePet/:id', checkAuthenticated, (req, res) => {
