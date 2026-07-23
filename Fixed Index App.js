@@ -440,7 +440,7 @@ app.get('/deletePet/:id', checkAuthenticated, (req, res) => {
 
 });
 // Recently delete
-app.get('/recentlyDeleted', checkAuthenticated, (req, res) => {
+app.get('/recentlyDeleted', checkAuthenticated, checkAdmin, (req, res) => {
 
     const sql = "SELECT * FROM pets WHERE deleted = 1";
 
