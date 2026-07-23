@@ -7,11 +7,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <title>Adopted Pets - Pet Home</title>
     <style>
-        /* Background color for the whole page */
         body {
             background-color: #FFF4E6; 
         }
-    
         .card {
             transition: transform 0.2s;
         }
@@ -35,41 +33,22 @@
             <div class="collapse navbar-collapse" id="collapsibleNavbar">
                 <ul class="navbar-nav ms-auto">
                     <% if (user) { %>
-                        <!-- Admin only: Add Pet -->
                         <% if (user.role === 'admin') { %>
                             <li class="nav-item">
-                                <a class="nav-link" href="/add">
-                                    <span class="me-1"></span> Add Pet
-                                </a>
+                                <a class="nav-link" href="/add">Add Pet</a>
                             </li>
-                        <% } %>
-                        
-                        <!-- Admin only: Recently Deleted -->
-                        <% if (user.role === 'admin') { %>
                             <li class="nav-item">
-                                <a class="nav-link" href="/recentlyDeleted">
-                                    <span class="me-1"></span> Recently Deleted
-                                </a>
+                                <a class="nav-link" href="/recentlyDeleted">Recently Deleted</a>
                             </li>
                         <% } %>
-                        
-                        <!-- Filter - for all logged in users -->
                         <li class="nav-item">
-                            <a class="nav-link" href="/filter">
-                                <span class="me-1"></span> Filter
-                            </a>
+                            <a class="nav-link" href="/filter">Filter</a>
                         </li>
-                        
-                        <!-- Adopted Pets - Active -->
                         <li class="nav-item">
-                            <a class="nav-link active" href="/adopted">
-                                <span class="me-1"></span> Adopted Pets
-                            </a>
+                            <a class="nav-link active" href="/adopted">Adopted Pets</a>
                         </li>
-                        
-                        <!-- User Dropdown -->
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                                 <%= user.username || 'User' %>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
@@ -81,25 +60,6 @@
             </div>
         </div>
     </nav>
-
-    <!-- Flash Messages -->
-    <% if (messages && messages.length > 0) { %>
-        <div class="container mt-3">
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <span class="me-2"></span> <%= messages %>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        </div>
-    <% } %>
-    
-    <% if (errors && errors.length > 0) { %>
-        <div class="container mt-3">
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <span class="me-2"></span> <%= errors %>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        </div>
-    <% } %>
 
     <!-- Main Content -->
     <div class="container mt-4">
@@ -180,7 +140,6 @@
                                         View Details
                                     </a>
 
-                                    <!-- Admin Only Controls -->
                                     <% if (user && user.role === 'admin') { %>
                                         <div class="d-flex gap-2">
                                             <a href="/pets/edit/<%= pet.pet_id %>" class="btn btn-outline-warning btn-sm flex-grow-1">
@@ -190,14 +149,6 @@
                                                onclick="return confirm('Are you sure you want to delete this pet?');">
                                                 Delete
                                             </a>
-                                        </div>
-                                        <div class="mt-2">
-                                            <form action="/pets/unadopt/<%= pet.pet_id %>" method="POST" class="d-grid">
-                                                <button type="submit" class="btn btn-outline-secondary btn-sm" 
-                                                        onclick="return confirm('Are you sure you want to mark this pet as available again?');">
-                                                    Mark as Available
-                                                </button>
-                                            </form>
                                         </div>
                                     <% } %>
                                 </div>
