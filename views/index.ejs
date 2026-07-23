@@ -49,9 +49,6 @@
                         <li class="nav-item">
                             <a class="nav-link" href="/recentlyDeleted">Recently Deleted</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/filter">Filter</a>
-                        </li>
                         
                         <!-- ADMIN-ONLY links -->
                         <% if (user.role === 'admin') { %>
@@ -64,7 +61,6 @@
                                     <li><a class="dropdown-item" href="/admin/users">Manage Users</a></li>
                                     <li><a class="dropdown-item" href="/admin/pets">All Pets</a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="/admin/audit">Audit Log</a></li>
                                 </ul>
                             </li>
                         <% } %>
@@ -120,13 +116,6 @@
             <% } %>
         </div>
 
-        <!-- Pet Count Badge -->
-        <div class="d-flex justify-content-center mb-4">
-            <span class="badge bg-secondary p-3 fs-6">
-                <%= pets.length %> pet<% if (pets.length !== 1) { %>s<% } %> currently looking for a home
-            </span>
-        </div>
-
         <!-- Pet Cards Grid -->
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             <% if (pets && pets.length > 0) { %>
@@ -180,9 +169,6 @@
                                 <p class="card-text" style="font-size: 0.8rem;">
                                     <small class="text-muted">
                                         Added by: <%= pet.username || 'Unknown User' %>
-                                        <% if (pet.user_id === user?.user_id) { %>
-                                            <span class="badge bg-primary ms-1">Your Pet</span>
-                                        <% } %>
                                     </small>
                                 </p>
                             </div>
@@ -253,7 +239,7 @@
                         <h3 class="mb-3">No Pets Available</h3>
                         <p class="text-muted mb-4">We don't have any pets available for adoption at the moment.</p>
                         <% if (user) { %>
-                            <a href="/addpet" class="btn btn-primary btn-lg">Add a Pet</a>
+                            <a href="/add" class="btn btn-primary btn-lg">Add a Pet</a>
                         <% } else { %>
                             <p class="text-muted">
                                 <a href="/register">Register</a> or <a href="/login">Login</a> to add a pet
