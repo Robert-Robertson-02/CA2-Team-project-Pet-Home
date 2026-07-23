@@ -89,25 +89,6 @@
         </div>
     </nav>
 
-    <!-- Flash Messages -->
-    <% if (messages && messages.length > 0) { %>
-        <div class="container mt-3">
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <span class="me-2"></span> <%= messages %>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        </div>
-    <% } %>
-    
-    <% if (errors && errors.length > 0) { %>
-        <div class="container mt-3">
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <span class="me-2"></span> <%= errors %>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        </div>
-    <% } %>
-
     <!-- Main Content -->
     <div class="container mt-4">
         <!-- Page Header -->
