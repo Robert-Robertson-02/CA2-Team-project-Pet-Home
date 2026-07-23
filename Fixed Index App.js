@@ -309,15 +309,18 @@ app.get('/', (req, res) => {
 app.get('/pets/:id/edit', checkAdmin, (req, res) => {
     const petId = req.params.id;
     
-    const sql = 'SELECT * FROM pets WHERE id = ?';
+    // FIXED: Changed 'id' to 'pet_id' to match database schema
+    const sql = 'SELECT * FROM pets WHERE pet_id = ?';
     connection.query(sql, [petId], (err, results) => {
         if (err) {
-            throw err;
+            console.error('Error fetching pet:', err);
+            req.flash('error', 'Error loading pet data');
+            return res.redirect('/');
         }
         
         if (results.length === 0) {
             req.flash('error', 'Pet not found');
-            return res.redirect('/pets');
+            return res.redirect('/');
         }
         
         res.render('editpet', { 
@@ -364,47 +367,54 @@ app.post('/pets/:id/update', checkAuthenticated, upload.single('image'), (req, r
         return res.redirect(`/pets/${petId}/edit`);
     }
     
-    // First, check if the pet exists and user has permission
-    const checkSql = 'SELECT * FROM pets WHERE id = ?';
+    // Check if the pet exists and user has permission
+    const checkSql = 'SELECT * FROM pets WHERE pet_id = ?';
     connection.query(checkSql, [petId], (err, results) => {
         if (err) {
-            throw err;
+            console.error('Error checking pet:', err);
+            req.flash('error', 'Error checking pet data');
+            return res.redirect('/');
         }
         
         if (results.length === 0) {
             req.flash('error', 'Pet not found');
-            return res.redirect('/pets');
+            return res.redirect('/');
         }
         
-        // Check permission
+        // Check permission (admin or owner)
         if (req.session.user.role !== 'admin' && results[0].user_id !== req.session.user.id) {
             req.flash('error', 'You do not have permission to update this pet');
-            return res.redirect('/pets');
+            return res.redirect('/');
         }
         
-        // Determine if we're updating the image
+        // Handle image update - FIXED: Store buffer and mimetype
         let image = results[0].image; // Keep existing image by default
+        let imageMimetype = results[0].image_mimetype; // Keep existing mimetype by default
+        
         if (req.file) {
-            image = req.file.filename; // Update with new image if provided
+            image = req.file.buffer;
+            imageMimetype = req.file.mimetype;
         }
         
-        // Update the pet in the database
+        // FIXED: Added image_mimetype to UPDATE query
         const updateSql = `UPDATE pets 
                           SET pet_name = ?, animal_type = ?, age = ?, description = ?, 
-                              allergies = ?, breed = ?, image = ? 
-                          WHERE id = ?`;
+                              allergies = ?, breed = ?, image = ?, image_mimetype = ?
+                          WHERE pet_id = ?`;
         
-        connection.query(updateSql, [pet_name, animal_type, age, description, allergies, breed, image, petId], (err, result) => {
+        connection.query(updateSql, [pet_name, animal_type, age, description, allergies, breed, image, imageMimetype, petId], (err, result) => {
             if (err) {
-                throw err;
+                console.error('Error updating pet:', err);
+                req.flash('error', 'Error updating pet');
+                return res.redirect(`/pets/${petId}/edit`);
             }
             
             req.flash('success', 'Pet updated successfully!');
-            res.redirect('/pets');
+            res.redirect('/');
         });
     });
 });
-//My route ends here
+// My route ends here
 
 //part E Delete
 app.get('/deletePet/:id', checkAuthenticated, (req, res) => {
