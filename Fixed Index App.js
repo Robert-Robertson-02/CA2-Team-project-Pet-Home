@@ -574,5 +574,31 @@ app.get('/pets/details/:id', (req, res) => {
 
 // END OF PART F
 
+// ============================================
+// ADOPTED PETS ROUTE
+// ============================================
+app.get('/adopted', checkAuthenticated, (req, res) => {
+    connection.query('SELECT * FROM adopted_pets', (err, results) => {
+        if (err) {
+            console.error('Error fetching adopted pets:', err);
+            return res.render('adopted', { 
+                pets: [],
+                user: req.session.user || null,
+                messages: [],
+                errors: ['Error loading adopted pets: ' + err.message]
+            });
+        }
+        
+        console.log('Found', results.length, 'adopted pets');
+        
+        res.render('adopted', { 
+            pets: results,
+            user: req.session.user || null,
+            messages: req.flash('success'),
+            errors: req.flash('error')
+        });
+    });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
