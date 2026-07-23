@@ -312,10 +312,9 @@ app.get('/', (req, res) => {
 // End of part C
 
 // Part D - Editing Existing Information (Aalysha 25044114)
-app.get('/pets/:id/edit', checkAdmin, (req, res) => {
+app.get('/pets/edit/:id', checkAdmin, (req, res) => {
     const petId = req.params.id;
     
-    // FIXED: Changed 'id' to 'pet_id' to match database schema
     const sql = 'SELECT * FROM pets WHERE pet_id = ?';
     connection.query(sql, [petId], (err, results) => {
         if (err) {
