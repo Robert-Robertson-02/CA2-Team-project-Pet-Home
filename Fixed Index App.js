@@ -337,7 +337,7 @@ app.get('/pets/edit/:id', checkAdmin, (req, res) => {
     });
 });
 
-app.post('/pets/:id/update', checkAuthenticated, upload.single('image'), (req, res) => {
+app.post('/pets/update/:id', checkAuthenticated, upload.single('image'), (req, res) => {
     const petId = req.params.id;
     const { pet_name, animal_type, age, description, allergies, breed } = req.body;
     
