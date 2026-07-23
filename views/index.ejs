@@ -8,12 +8,12 @@
     <title>Pet Home - Find Your Perfect Companion</title>
 
     <style>
-          /* Background color for the whole page */
+        /* Background color for the whole page */
         body {
             background-color: #FFF4E6; 
         }
         .pet-image {
-            width: 50%;
+            width: 100%;
             height: 200px;
             object-fit: cover;
         }
@@ -34,38 +34,35 @@
             <div class="collapse navbar-collapse" id="collapsibleNavbar">
                 <ul class="navbar-nav ms-auto">
                     <% if (user) { %>
-                        <!-- Common links for ALL logged-in users -->
-                        <li class="nav-item">
-                            <a class="nav-link" href="/add">Add Pet</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/recentlyDeleted">Recently Deleted</a>
-                        </li>
-                        
-                        <!-- ADMIN-ONLY links -->
+                        <!-- Show Add Pet ONLY for Admins -->
                         <% if (user.role === 'admin') { %>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
-                                    Admin
+                            <li class="nav-item">
+                                <a class="nav-link" href="/add">
+                                    <span class="me-1"></span> Add Pet
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="/admin/dashboard">Dashboard</a></li>
-                                    <li><a class="dropdown-item" href="/admin/users">Manage Users</a></li>
-                                    <li><a class="dropdown-item" href="/admin/pets">All Pets</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                </ul>
                             </li>
                         <% } %>
+                        
+                        <!-- Show Recently Deleted ONLY for Admins -->
+                        <% if (user.role === 'admin') { %>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/recentlyDeleted">
+                                    <span class="me-1"></span> Recently Deleted
+                                </a>
+                            </li>
+                        <% } %>
+                        
+                        <!-- Common links for ALL logged-in users -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="/filter">
+                                <span class="me-1"></span> Filter
+                            </a>
+                        </li>
                         
                         <!-- User Dropdown -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
                                 <%= user.username || 'User' %>
-                                <% if (user.role === 'admin') { %>
-                                    <span class="badge bg-danger ms-1">Admin</span>
-                                <% } else { %>
-                                    <span class="badge bg-secondary ms-1">User</span>
-                                <% } %>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="/profile">My Profile</a></li>
@@ -77,10 +74,14 @@
                     <% } else { %>
                         <!-- Guest links -->
                         <li class="nav-item">
-                            <a class="nav-link" href="/register">Register</a>
+                            <a class="nav-link" href="/register">
+                                <span class="me-1"></span> Register
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/login">Login</a>
+                            <a class="nav-link" href="/login">
+                                <span class="me-1"></span> Login
+                            </a>
                         </li>
                     <% } %>
                 </ul>
@@ -88,153 +89,66 @@
         </div>
     </nav>
 
+    <!-- Flash Messages -->
+    <% if (messages && messages.length > 0) { %>
+        <div class="container mt-3">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <span class="me-2">✅</span> <%= messages %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    <% } %>
+    
+    <% if (errors && errors.length > 0) { %>
+        <div class="container mt-3">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span class="me-2">❌</span> <%= errors %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    <% } %>
+
     <!-- Main Content -->
     <div class="container mt-4">
         <!-- Page Header -->
         <div class="text-center mb-4">
             <h1 class="display-5 fw-bold">Find Your Perfect Companion</h1>
             <p class="text-muted">Discover adorable pets waiting for their forever home</p>
-            
-            <!-- Show user role badge if logged in -->
-            <% if (user) { %>
-                <div class="mt-2">
-                    <% if (user.role === 'admin') { %>
-                        <span class="badge bg-danger p-2">Admin Access</span>
-                        <span class="badge bg-info p-2 ms-2">Full Control</span>
-                    <% } else { %>
-                        <span class="badge bg-secondary p-2">Regular User</span>
-                    <% } %>
-                </div>
-            <% } %>
+        </div>
+
+        <!-- Pet Count Badge -->
+        <div class="d-flex justify-content-center mb-4">
+            <span class="badge bg-secondary p-3 fs-6">
+                <%= pets.length %> pet<% if (pets.length !== 1) { %>s<% } %> currently looking for a home
+            </span>
         </div>
 
         <!-- Pet Cards Grid -->
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             <% if (pets && pets.length > 0) { %>
                 <% pets.forEach(function(pet) { %>
-                    <div class="col">
-                        <div class="card h-100 shadow-sm">
-                            <!-- Pet Image -->
-                            <div class="bg-light text-center" style="height: 200px; overflow: hidden; position: relative;">
-                                <% if (pet.image && pet.image !== 'null' && pet.image !== '') { %>
-                                    <img src="/pet-image/<%= pet.pet_id %>" 
-                                         alt="<%= pet.pet_name %>" 
-                                         class="pet-image"
-                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                    <div class="d-flex justify-content-center align-items-center h-100 text-secondary" style="font-size: 4rem; display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
-                                    </div>
-                                <% } else { %>
-                                    <div class="d-flex justify-content-center align-items-center h-100 text-secondary" style="font-size: 4rem;">
-                                    </div>
-                                <% } %>
-                            </div>
-                            
-                            <!-- Pet Details -->
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h5 class="card-title fw-bold mb-0">
-                                        <%= pet.pet_name %>
-                                        <% if (pet.status === 'adopted') { %>
-                                            <span class="badge bg-success ms-2">Adopted</span>
-                                        <% } %>
-                                    </h5>
-                                    <span class="badge bg-secondary">
-                                        <%= pet.animal_type || 'Pet' %>
-                                    </span>
-                                </div>
-                                
-                                <div class="mb-2">
-                                    <span class="badge bg-info me-1">Age: <%= pet.age || 'Unknown' %></span>
-                                    <span class="badge bg-warning text-dark">Breed: <%= pet.breed || 'Unknown' %></span>
-                                </div>
-
-                                <% if (pet.description) { %>
-                                    <p class="card-text text-muted" style="font-size: 0.9rem;">
-                                        <%= pet.description.length > 100 ? pet.description.substring(0, 100) + '...' : pet.description %>
-                                    </p>
-                                <% } else { %>
-                                    <p class="card-text text-muted fst-italic" style="font-size: 0.9rem;">
-                                        No description provided
-                                    </p>
-                                <% } %>
-
-                                <p class="card-text" style="font-size: 0.8rem;">
-                                    <small class="text-muted">
-                                        Added by: <%= pet.username || 'Unknown User' %>
-                                    </small>
-                                </p>
-                            </div>
-                            
-                            <!-- Action Buttons -->
-                            <div class="card-footer bg-transparent border-top-0">
-                                <div class="d-grid gap-2">
-                                    <a href="/pets/details/<%= pet.pet_id %>" class="btn btn-outline-primary btn-sm">
-                                        View Details
-                                    </a>
-                                    
-                                    <!-- ADOPT BUTTON -->
-                                    <% if (user) { %>
-                                        <% if (pet.status !== 'adopted') { %>
-                                            <form action="/adopt/<%= pet.pet_id %>" method="POST" class="d-grid">
-                                                <button type="submit" class="btn btn-success btn-sm">
-                                                    Adopt Me!
-                                                </button>
-                                            </form>
-                                        <% } else { %>
-                                            <button class="btn btn-secondary btn-sm" disabled>
-                                                Already Adopted
-                                            </button>
-                                        <% } %>
-                                    <% } else { %>
-                                        <div class="text-center">
-                                            <small class="text-muted">
-                                                <a href="/login">Login</a> or <a href="/register">Register</a> to adopt
-                                            </small>
-                                        </div>
-                                    <% } %>
-                                    
-                                    <!-- Edit/Delete buttons -->
-                                    <% if (user) { %>
-                                        <div class="d-flex gap-2">
-                                            <% if (user.role === 'admin' || user.user_id === pet.user_id) { %>
-                                                <a href="/pets/edit/<%= pet.pet_id %>" class="btn btn-outline-warning btn-sm flex-grow-1">
-                                                    Edit
-                                                </a>
-                                                <a href="/deletePet/<%= pet.pet_id %>" class="btn btn-outline-danger btn-sm flex-grow-1" 
-                                                   onclick="return confirm('Are you sure you want to delete this pet?');">
-                                                    Delete
-                                                </a>
-                                            <% } else { %>
-                                                <button class="btn btn-secondary btn-sm flex-grow-1" disabled>
-                                                    No Access
-                                                </button>
-                                                <span class="badge bg-secondary d-flex align-items-center">
-                                                    Owner only
-                                                </span>
-                                            <% } %>
-                                        </div>
-                                        
-                                        <% if (user.role === 'admin') { %>
-                                            <div class="mt-2">
-                                                <small class="text-muted">Admin can edit/delete any pet</small>
-                                            </div>
-                                        <% } %>
-                                    <% } %>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Include the card template for each pet -->
+                    <%- include('card', { pet: pet, user: user }) %>
                 <% }); %>
             <% } else { %>
                 <div class="col-12">
-                    <div class="text-center p-5">
+                    <div class="text-center p-5 bg-light rounded-3">
+                        <div style="font-size: 5rem; margin-bottom: 1rem;"></div>
                         <h3 class="mb-3">No Pets Available</h3>
                         <p class="text-muted mb-4">We don't have any pets available for adoption at the moment.</p>
                         <% if (user) { %>
-                            <a href="/add" class="btn btn-primary btn-lg">Add a Pet</a>
+                            <% if (user.role === 'admin') { %>
+                                <!-- Show Add Pet button ONLY for Admins -->
+                                <a href="/add" class="btn btn-primary btn-lg">
+                                    Add a Pet (Admin Only)
+                                </a>
+                            <% } else { %>
+                                <!-- Regular users see this message -->
+                                <p class="text-muted">Check back later for new pets!</p>
+                            <% } %>
                         <% } else { %>
                             <p class="text-muted">
-                                <a href="/register">Register</a> or <a href="/login">Login</a> to add a pet
+                                <a href="/register">Register</a> or <a href="/login">Login</a> to view more
                             </p>
                         <% } %>
                     </div>
@@ -246,11 +160,8 @@
     <!-- Footer -->
     <footer class="bg-dark text-white text-center py-4 mt-5">
         <div class="container">
-            <p class="mb-1">Pet Home - Find Your Perfect Companion</p>
+            <p class="mb-1"> Pet Home - Find Your Perfect Companion</p>
             <p class="mb-0 text-muted" style="font-size: 0.9rem;">© 2026 Pet Home. All rights reserved.</p>
-            <% if (user && user.role === 'admin') { %>
-                <p class="mb-0 text-muted" style="font-size: 0.8rem;">Admin Session Active</p>
-            <% } %>
         </div>
     </footer>
 </body>
