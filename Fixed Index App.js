@@ -419,7 +419,7 @@ app.get('/deletePet/:id', checkAuthenticated, (req, res) => {
         }
 
         req.flash('success', 'Pet moved to Recently Deleted.');
-        res.redirect('/pets');
+        res.redirect('/');
     });
 
 });
@@ -445,7 +445,7 @@ app.get('/recentlyDeleted', checkAuthenticated, (req, res) => {
 //restore deleted
 app.get('/restorePet/:id', checkAuthenticated, (req, res) => {
 
-    const pe_id = req.params.id;
+    const pet_id = req.params.id;
 
     const sql = "UPDATE pets SET deleted = 0 WHERE pet_id = ?";
 
