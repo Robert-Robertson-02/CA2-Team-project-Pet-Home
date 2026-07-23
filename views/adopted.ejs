@@ -145,10 +145,6 @@
                             <!-- Action Buttons -->
                             <div class="card-footer bg-transparent border-top-0">
                                 <div class="d-grid gap-2">
-                                    <a href="/pets/petDetails/<%= pet.pet_id %>" class="btn btn-outline-primary btn-sm">
-                                        View Details
-                                    </a>
-
                                     <% if (user && user.role === 'admin') { %>
                                         <div class="d-flex gap-2">
                                             <a href="/pets/edit/<%= pet.pet_id %>" class="btn btn-outline-warning btn-sm flex-grow-1">
