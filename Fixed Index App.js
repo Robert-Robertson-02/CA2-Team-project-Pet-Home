@@ -222,14 +222,15 @@ app.post('/adopt/:id', checkAuthenticated, (req, res) => {
         const pet = results[0];
 
         const insertSql = `INSERT INTO adopted_pets 
-            (original_pet_id, pet_name, animal_type, age, description, allergies, breed, image, user_id, adopted_by) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+            (original_pet_id, pet_name, animal_type, age, description, allergies, breed, image, image_mimetype, user_id, adopted_by) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-        connection.query(insertSql, [
-            pet.pet_id, pet.pet_name, pet.animal_type, pet.age,
-            pet.description, pet.allergies, pet.breed, pet.image,
-            pet.user_id, req.session.user.id
-        ], (err, result) => {
+
+connection.query(insertSql, [
+    pet.pet_id, pet.pet_name, pet.animal_type, pet.age,
+    pet.description, pet.allergies, pet.breed, pet.image, pet.image_mimetype,
+    pet.user_id, req.session.user.id
+], (err, result) => {
             if (err) {
                 throw err;
             }
