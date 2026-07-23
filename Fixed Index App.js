@@ -195,20 +195,22 @@ app.post('/add', checkAuthenticated, upload.single('image'), (req, res) => {
     }
 
     let image = null;
+    let imageMimetype = null;
     if (req.file) {
-        image = req.file.filename;
+    image = req.file.buffer;
+    imageMimetype = req.file.mimetype;
     }
 
-    const sql = `INSERT INTO pets (pet_name, animal_type, age, description, allergies, breed, image, user_id, deleted) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`;
+    const sql = `INSERT INTO pets (pet_name, animal_type, age, description, allergies, breed, image, image_mimetype, user_id, deleted) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`;
 
-    connection.query(sql, [pet_name, animal_type, age, description, allergies, breed, image, req.session.user.id], (err, result) => {
-        if (err) {
-            throw err;
-        }
-        req.flash('success', 'Pet added successfully!');
-        res.redirect('/'); //placeholder
-    });
+connection.query(sql, [pet_name, animal_type, age, description, allergies, breed, image, imageMimetype, req.session.user.id], (err, result) => {
+    if (err) {
+        throw err;
+    }
+    req.flash('success', 'Pet added successfully!');
+    res.redirect('/');
+});
 });
 
 app.post('/adopt/:id', checkAuthenticated, (req, res) => {
@@ -250,6 +252,19 @@ app.post('/adopt/:id', checkAuthenticated, (req, res) => {
                 res.redirect('/');
             });
         });
+    });
+});
+
+app.get('/pet-image/:id', (req, res) => {
+    const petId = req.params.id;
+    const sql = "SELECT image, image_mimetype FROM pets WHERE pet_id = ?";
+    connection.query(sql, [petId], (err, results) => {
+        if (err) throw err;
+        if (results.length === 0 || results[0].image === null) {
+            return res.status(404).send('No image');
+        }
+        res.set('Content-Type', results[0].image_mimetype);
+        res.send(results[0].image);
     });
 });
 
