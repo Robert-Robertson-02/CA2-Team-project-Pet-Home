@@ -305,9 +305,8 @@ app.get('/', (req, res) => {
 
 // End of part C
 
-app.js Part D: 
 // Part D - Editing Existing Information (Aalysha 25044114)
-app.get('/pets/:id/edit', checkAuthenticated, (req, res) => {
+app.get('/pets/:id/edit', checkAdmin, (req, res) => {
     const petId = req.params.id;
     
     const sql = 'SELECT * FROM pets WHERE id = ?';
