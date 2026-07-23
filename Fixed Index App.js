@@ -263,56 +263,47 @@ app.get('/pet-image/:id', (req, res) => {
 
 // END OF PART B
 
-///part C
 // ============================================
-// HOMEPAGE - FIXED (ONLY ONE)
+// HOMEPAGE - Part C
 // ============================================
 app.get('/', (req, res) => {
-    // First, let's check what columns exist in the pets table
-    connection.query("DESCRIBE pets", (err, columns) => {
+    // Fetch pets with proper column names
+    const sql = `
+        SELECT p.*, u.username 
+        FROM pets p
+        LEFT JOIN users u ON p.user_id = u.id
+        WHERE p.deleted = 0
+        ORDER BY p.pet_id DESC
+    `;
+    
+    connection.query(sql, (err, results) => {
         if (err) {
-            return res.status(500).send('Database error: ' + err.message);
+            // Try a simpler query without JOIN
+            const simpleSql = "SELECT * FROM pets WHERE deleted = 0 ORDER BY pet_id DESC";
+            connection.query(simpleSql, (err2, simpleResults) => {
+                if (err2) {
+                    return res.status(500).send('Error loading pets: ' + err2.message);
+                }
+                res.render('index', { 
+                    pets: simpleResults,
+                    user: req.session.user || null,
+                    messages: req.flash('success'),
+                    errors: req.flash('error')
+                });
+            });
+            return;
         }
         
-        // Now fetch pets with proper column names
-        const sql = `
-            SELECT p.*, u.username 
-            FROM pets p
-            LEFT JOIN users u ON p.user_id = u.id
-            WHERE p.deleted = 0
-            ORDER BY p.pet_id DESC
-        `;
-        
-        connection.query(sql, (err, results) => {
-            if (err) {
-                // Try a simpler query without JOIN
-                const simpleSql = "SELECT * FROM pets WHERE deleted = 0";
-                connection.query(simpleSql, (err2, simpleResults) => {
-                    if (err2) {
-                        return res.status(500).send('Error loading pets: ' + err2.message);
-                    }
-                    res.render('index', { 
-                        pets: simpleResults,
-                        user: req.session.user || null,
-                        messages: req.flash('success'),
-                        errors: req.flash('error')
-                    });
-                });
-                return;
-            }
-            
-            res.render('index', { 
-                pets: results,
-                user: req.session.user || null,
-                messages: req.flash('success'),
-                errors: req.flash('error')
-            });
+        res.render('index', { 
+            pets: results,
+            user: req.session.user || null,
+            messages: req.flash('success'),
+            errors: req.flash('error')
         });
     });
 });
 
 // End of part C
-
 
 //part E Delete
 app.get('/deletePet/:id', checkAuthenticated, (req, res) => {
