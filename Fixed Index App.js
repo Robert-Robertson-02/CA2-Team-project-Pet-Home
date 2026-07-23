@@ -91,6 +91,12 @@ app.get('/view',  (req, res) => {
 });
 
 
+app.get('/deny', checkAuthenticated, (req, res) => {
+    res.render('deny', {user: req.session.user } ); 
+});
+
+
+
 
 app.get('/register', (req, res) => {
     res.render('register', { messages: req.flash('error'), formData: req.flash('formData')[0] });
