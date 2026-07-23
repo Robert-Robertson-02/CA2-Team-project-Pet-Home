@@ -269,9 +269,7 @@ app.get('/pet-image/:id', (req, res) => {
 
 // END OF PART B
 
-// ============================================
-// HOMEPAGE - Part C
-// ============================================
+// HOMEPAGE - Part C (Sagga - 25002439)
 app.get('/', (req, res) => {
     // Fetch pets with proper column names
     const sql = `
@@ -574,9 +572,8 @@ app.get('/pets/details/:id', (req, res) => {
 
 // END OF PART F
 
-// ============================================
-// ADOPTED PETS ROUTE
-// ============================================
+
+// ADOPTED PETS ROUTE (Sagga -25002439)
 app.get('/adopted', checkAuthenticated, (req, res) => {
     connection.query('SELECT * FROM adopted_pets', (err, results) => {
         if (err) {
@@ -591,13 +588,50 @@ app.get('/adopted', checkAuthenticated, (req, res) => {
         
         console.log('Found', results.length, 'adopted pets');
         
+        // Add image URL to each pet
+        const petsWithImageUrl = results.map(pet => {
+            return {
+                ...pet,
+                imageUrl: pet.image ? `/adopted-pet-image/${pet.pet_id}` : null
+            };
+        });
+        
         res.render('adopted', { 
-            pets: results,
+            pets: petsWithImageUrl,
             user: req.session.user || null,
             messages: req.flash('success'),
             errors: req.flash('error')
         });
     });
+});
+
+// ADOPTED PET IMAGE ROUTE
+app.get('/adopted-pet-image/:id', (req, res) => {
+    const petId = req.params.id;
+    
+    connection.query(
+        'SELECT image, image_mimetype FROM adopted_pets WHERE pet_id = ?',
+        [petId],
+        (err, results) => {
+            if (err) {
+                console.error('Error fetching adopted pet image:', err);
+                return res.status(500).send('Error retrieving image');
+            }
+            
+            if (results.length === 0 || !results[0].image) {
+                return res.status(404).send('Image not found');
+            }
+            
+            const pet = results[0];
+            const imageBuffer = pet.image;
+            
+            // Determine MIME type - fallback to JPEG if null
+            let mimeType = pet.image_mimetype || 'image/jpeg';
+            
+            res.setHeader('Content-Type', mimeType);
+            res.send(imageBuffer);
+        }
+    );
 });
 
 const PORT = process.env.PORT || 3000;
