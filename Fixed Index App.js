@@ -151,7 +151,7 @@ app.get('/logout', (req, res) => {
 
 // PART B: ADDING PETS and transferring pets from pets table to adopted pets table (Ian nathan quah yu yang 25026099)
 
-app.get('/add', checkAuthenticated, checkAdmin (req, res) => {
+app.get('/add', checkAuthenticated, checkAdmin, (req, res) => {
     res.render('addpet', { user: req.session.user, errors: req.flash('error'), messages: req.flash('success') });
 });
 
