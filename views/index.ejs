@@ -54,20 +54,25 @@
                             </a>
                         </li>
                         
+                        <!-- Adopted Pets - For logged-in users -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="/adopted">
+                                <span class="me-1"></span> Adopted Pets
+                            </a>
+                        </li>
+                        
                         <!-- User Dropdown -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
                                 <%= user.username || 'User' %>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="/profile">My Profile</a></li>
-                                <li><a class="dropdown-item" href="/my-pets">My Pets</a></li>
-                                <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="/logout">Logout</a></li>
                             </ul>
                         </li>
                     <% } else { %>
-                        <!-- Guest links -->
+                        
+                        <!-- Guest links - Show ONLY when NOT logged in -->
                         <li class="nav-item">
                             <a class="nav-link" href="/register">
                                 <span class="me-1"></span> Register
@@ -122,13 +127,14 @@
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             <% if (pets && pets.length > 0) { %>
                 <% pets.forEach(function(pet) { %>
-    <div class="col">
-        <%- include('card', { pet: pet, user: user }) %>
-    </div>
-<% }); %>
+                    <div class="col">
+                        <%- include('card', { pet: pet, user: user }) %>
+                    </div>
+                <% }); %>
+            <% } else { %>
                 <div class="col-12">
                     <div class="text-center p-5 bg-light rounded-3">
-                        <div style="font-size: 5rem; margin-bottom: 1rem;"></div>
+                        <div style="font-size: 5rem; margin-bottom: 1rem;">🐾</div>
                         <h3 class="mb-3">No Pets Available</h3>
                         <p class="text-muted mb-4">We don't have any pets available for adoption at the moment.</p>
                         <% if (user) { %>
