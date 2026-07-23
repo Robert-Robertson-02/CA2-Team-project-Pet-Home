@@ -279,7 +279,7 @@ app.get('/', (req, res) => {
             FROM pets p
             LEFT JOIN users u ON p.user_id = u.id
             WHERE p.deleted = 0
-            ORDER BY p.created_at DESC
+            ORDER BY p.pet_id DESC
         `;
         
         connection.query(sql, (err, results) => {
