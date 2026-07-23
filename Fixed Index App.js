@@ -493,6 +493,55 @@ app.get('/permanentDelete/:id', checkAuthenticated, (req, res) => {
     });
 
 });
+// MOVE ADOPTED PET TO RECENTLY DELETED (Soft Delete)
+app.get('/adopted/delete/:id', checkAuthenticated, checkAdmin, (req, res) => {
+    const pet_id = req.params.id;
+    
+    // First, get the adopted pet data
+    const selectSql = "SELECT * FROM adopted_pets WHERE pet_id = ?";
+    
+    connection.query(selectSql, [pet_id], (err, results) => {
+        if (err) {
+            req.flash('error', 'Error fetching adopted pet: ' + err.message);
+            return res.redirect('/adopted');
+        }
+        
+        if (results.length === 0) {
+            req.flash('error', 'Pet not found');
+            return res.redirect('/adopted');
+        }
+        
+        const pet = results[0];
+        
+        // Move it back to pets table with deleted = 1
+        const insertSql = `INSERT INTO pets 
+            (pet_name, animal_type, age, description, allergies, breed, image, image_mimetype, user_id, deleted) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`;
+        
+        connection.query(insertSql, [
+            pet.pet_name, pet.animal_type, pet.age, pet.description, 
+            pet.allergies, pet.breed, pet.image, pet.image_mimetype, 
+            pet.user_id, 1
+        ], (err, result) => {
+            if (err) {
+                req.flash('error', 'Error moving pet: ' + err.message);
+                return res.redirect('/adopted');
+            }
+            
+            // Delete from adopted_pets table
+            const deleteSql = "DELETE FROM adopted_pets WHERE pet_id = ?";
+            connection.query(deleteSql, [pet_id], (err) => {
+                if (err) {
+                    req.flash('error', 'Error deleting from adopted table: ' + err.message);
+                    return res.redirect('/adopted');
+                }
+                
+                req.flash('success', 'Adopted pet moved to Recently Deleted.');
+                res.redirect('/adopted');
+            });
+        });
+    });
+});
 //part E end
 // PART F: SEARCHING, FILTERING AND ORGANISING INFORMATION (Irzan 25021343)
 
