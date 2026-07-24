@@ -683,5 +683,31 @@ app.get('/adopted-pet-image/:id', (req, res) => {
     );
 });
 
+// EDIT ADOPTED PET ROUTE
+app.get('/adopted/edit/:id', checkAuthenticated, checkAdmin, (req, res) => {
+    const petId = req.params.id;
+    
+    const sql = 'SELECT * FROM adopted_pets WHERE pet_id = ?';
+    connection.query(sql, [petId], (err, results) => {
+        if (err) {
+            console.error('Error fetching adopted pet:', err);
+            req.flash('error', 'Error loading pet data');
+            return res.redirect('/adopted');
+        }
+        
+        if (results.length === 0) {
+            req.flash('error', 'Pet not found');
+            return res.redirect('/adopted');
+        }
+        
+        res.render('editpet', { 
+            user: req.session.user, 
+            pet: results[0],
+            errors: req.flash('error'),
+            messages: req.flash('success')
+        });
+    });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
