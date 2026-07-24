@@ -34,36 +34,36 @@
             <div class="collapse navbar-collapse" id="collapsibleNavbar">
                 <ul class="navbar-nav ms-auto">
                     <% if (user) { %>
-                        <% if (user.role === 'admin') { %>
+                        <% if (user.role==='admin' ) { %>
                             <li class="nav-item">
                                 <a class="nav-link" href="/add">Add Pet</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="/recentlyDeleted">Recently Deleted</a>
                             </li>
-                        <% } %>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/filter">Filter</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" href="/adopted">Adopted Pets</a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                                <%= user.username || 'User' %>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="/logout">Logout</a></li>
-                            </ul>
-                        </li>
-                    <% } else { %>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/login">Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/register">Register</a>
-                        </li>
-                    <% } %>
+                            <% } %>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/filter">Filter</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link active" href="/adopted">Adopted Pets</a>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                        <%= user.username || 'User' %>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item" href="/logout">Logout</a></li>
+                                    </ul>
+                                </li>
+                                <% } else { %>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="/login">Login</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="/register">Register</a>
+                                    </li>
+                                    <% } %>
                 </ul>
             </div>
         </div>
@@ -79,21 +79,21 @@
 
         <!-- Pet Cards Grid -->
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-            <% if (pets && pets.length > 0) { %>
+            <% if (pets && pets.length> 0) { %>
                 <% pets.forEach(function(pet) { %>
                     <div class="col">
                         <div class="card h-100 shadow-sm pet-card">
                             <!-- Pet Image -->
                             <div style="height: 200px; overflow: hidden; position: relative;">
-                                <% if (pet.image && pet.image !== 'null' && pet.image !== '') { %>
-                                     <img src="/adopted-pet-image/<%= pet.pet_id %>" alt="<%= pet.pet_name %>"
+                                <% if (pet.image && pet.image !=='null' && pet.image !=='' ) { %>
+                                    <img src="/adopted-pet-image/<%= pet.pet_id %>" alt="<%= pet.pet_name %>"
                                         style="width: 100%; height: 100%; object-fit: cover; object-position: center;">
-                                <% } else { %>
-                                    <div class="d-flex justify-content-center align-items-center h-100 text-secondary"
-                                        style="font-size: 4rem; background-color: #f8f9fa;">
-                                        No Image
-                                    </div>
-                                <% } %>
+                                    <% } else { %>
+                                        <div class="d-flex justify-content-center align-items-center h-100 text-secondary"
+                                            style="font-size: 4rem; background-color: #f8f9fa;">
+                                            No Image
+                                        </div>
+                                        <% } %>
                             </div>
 
                             <!-- Pet Details -->
@@ -114,67 +114,71 @@
 
                                 <% if (pet.description) { %>
                                     <p class="card-text text-muted" style="font-size: 0.9rem;">
-                                        <%= pet.description.length > 100 ? pet.description.substring(0, 100) + '...' : pet.description %>
+                                        <%= pet.description.length> 100 ? pet.description.substring(0, 100) + '...' :
+                                            pet.description %>
                                     </p>
-                                <% } else { %>
-                                    <p class="card-text text-muted fst-italic" style="font-size: 0.9rem;">
-                                        No description provided
-                                    </p>
-                                <% } %>
-
-                                <p class="card-text" style="font-size: 0.8rem;">
-                                    <small class="text-muted">
-                                        Added by: <%= pet.username || 'Unknown User' %>
-                                    </small>
-                                </p>
-
-                                <!-- Adopted Status -->
-                                <div class="mt-2 p-2 bg-success bg-opacity-10 rounded-3">
-                                    <p class="mb-0 text-success" style="font-size: 0.85rem;">
-                                        <strong>Adopted!</strong>
-                                        <% if (pet.moved) { %>
-                                            <br>
-                                            <span class="text-muted" style="font-size: 0.8rem;">
-                                                Adopted on: <%= new Date(pet.moved).toLocaleDateString() %>
-                                            </span>
+                                    <% } else { %>
+                                        <p class="card-text text-muted fst-italic" style="font-size: 0.9rem;">
+                                            No description provided
+                                        </p>
                                         <% } %>
-                                    </p>
-                                </div>
+
+                                            <p class="card-text" style="font-size: 0.8rem;">
+                                                <small class="text-muted">
+                                                    Added by: <%= pet.username || 'Unknown User' %>
+                                                </small>
+                                            </p>
+
+                                            <!-- Adopted Status -->
+                                            <div class="mt-2 p-2 bg-success bg-opacity-10 rounded-3">
+                                                <p class="mb-0 text-success" style="font-size: 0.85rem;">
+                                                    <strong>Adopted!</strong>
+                                                    <% if (pet.moved) { %>
+                                                        <br>
+                                                        <span class="text-muted" style="font-size: 0.8rem;">
+                                                            Adopted on: <%= new Date(pet.moved).toLocaleDateString() %>
+                                                        </span>
+                                                        <% } %>
+                                                </p>
+                                            </div>
                             </div>
 
                             <!-- Action Buttons -->
                             <div class="card-footer bg-transparent border-top-0">
                                 <div class="d-grid gap-2">
-                                    <% if (user && user.role === 'admin') { %>
+                                    <% if (user && user.role==='admin' ) { %>
                                         <div class="d-flex gap-2">
-                                            <a href="/pets/edit/<%= pet.pet_id %>" class="btn btn-outline-warning btn-sm flex-grow-1">
-                                                Edit
+                                           <a href="/adopted/edit/<%= pet.pet_id %>" class="btn btn-outline-warning btn-sm flex-grow-1"> 
+                                            Edit
                                             </a>
-                                            <a href="/adopted/delete/<%= pet.pet_id %>" class="btn btn-outline-danger btn-sm flex-grow-1" 
+                                            <a href="/adopted/delete/<%= pet.pet_id %>"
+                                                class="btn btn-outline-danger btn-sm flex-grow-1"
                                                 onclick="return confirm('Are you sure you want to move this pet to Recently Deleted?');">
                                                 Delete
                                             </a>
                                         </div>
-                                    <% } %>
+                                        <% } %>
                                 </div>
                             </div>
                         </div>
                     </div>
-                <% }); %>
-            <% } else { %>
-                <div class="col-12">
-                    <div class="text-center p-5 bg-light rounded-3">
-                        <div style="font-size: 5rem; margin-bottom: 1rem;">No Image</div>
-                        <h3 class="mb-3">No Adopted Pets Yet</h3>
-                        <p class="text-muted mb-4">No pets have been adopted yet. Be the first to adopt a furry friend!</p>
-                        <a href="/" class="btn btn-primary">
-                            View Available Pets
-                        </a>
-                    </div>
-                </div>
-            <% } %>
+                    <% }); %>
+                        <% } else { %>
+                            <div class="col-12">
+                                <div class="text-center p-5 bg-light rounded-3">
+                                    <div style="font-size: 5rem; margin-bottom: 1rem;">No Image</div>
+                                    <h3 class="mb-3">No Adopted Pets Yet</h3>
+                                    <p class="text-muted mb-4">No pets have been adopted yet. Be the first to adopt a
+                                        furry friend!</p>
+                                    <a href="/" class="btn btn-primary">
+                                        View Available Pets
+                                    </a>
+                                </div>
+                            </div>
+                            <% } %>
         </div>
     </div>
 
 </body>
+
 </html>
